@@ -21,8 +21,9 @@ class SolanaNewsSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
         for element in self.__get_news_link_elements(response):
-            article_url = element.xpath('@href').get()
-            yield scrapy.Request(f"https://{SOLANA_FQDN}{article_url}", callback=self.__parse_article, meta={'url': article_url})
+            article_path = element.xpath('@href').get()
+            article_url = f"https://{SOLANA_FQDN}{article_path}"
+            yield scrapy.Request(article_url, callback=self.__parse_article, meta={'url': article_path})
 
     @staticmethod
     def __parse_article(response):
@@ -33,22 +34,17 @@ class SolanaNewsSpider(scrapy.Spider):
         section_node = response.xpath('//*[@id="__next"]/main/article/div/div/div/div/div[1]/div/section/node()') if section_node is None else section_node
 
         if section_node is not None:
-            # TODO: define data schema with scrapy itme? Ernie 2024-07-21
             content = SolanaNewsSpider.__content_cleaning_and_rebuilding(section_node)
-            item = {
-                'url': article_url,
-                'date': article_date,
-                'title': title,
-                'content': content
-            }
         else:
-            item = {
-                'url': article_url,
-                'date': article_date,
-                'title': title,
-                'content': "<p>No content</p>"
-            }
-        yield item
+            content = "<p>No content</p>"
+
+        yield {
+            'url': article_url,
+            'platform': SOLANA_FQDN,
+            'date': article_date,
+            'title': title,
+            'content': content
+        }
 
     @staticmethod
     def __content_cleaning_and_rebuilding(section_node):
