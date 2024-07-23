@@ -1,10 +1,10 @@
-from datetime import datetime, timezone
 from typing import List
 
-import lxml_html_clean as clean
 import scrapy
-from bs4 import BeautifulSoup
 from scrapy.selector import SelectorList
+
+from getnews.spiders.clean_utils import CleanUtils
+from getnews.spiders.time_utils import TimeUtils
 
 SOLANA_FQDN = "solana.com"
 
@@ -13,11 +13,6 @@ class SolanaNewsSpider(scrapy.Spider):
     name = "solana_news"
     allowed_domains = [SOLANA_FQDN]
     start_urls = [f"https://{SOLANA_FQDN}/news"]
-
-    # cleaner
-    SAFE_ATTRS = {'src', 'alt', 'href', 'title', 'width', 'height'}
-    KILL_TAGS = ['object', 'iframe']
-    cleaner = clean.Cleaner(safe_attrs_only=True, safe_attrs=SAFE_ATTRS, kill_tags=KILL_TAGS)
 
     def parse(self, response, **kwargs):
         for element in self.__get_news_link_elements(response):
@@ -29,6 +24,7 @@ class SolanaNewsSpider(scrapy.Spider):
     def __parse_article(response):
         article_url = response.meta['url']
         article_date = response.xpath('/html/head/meta[11]/@content').get()
+        article_date = TimeUtils.convert_datetime_to_iso8601(article_date, "%d %B %Y")
         title = response.xpath('//*[@id="__next"]/main/div[2]/section/div/div/div[1]/h1/text()').get()
         section_node = response.xpath('//*[@id="__next"]/main/article/div/div/div/div/div/div/section/node()')
         section_node = response.xpath('//*[@id="__next"]/main/article/div/div/div/div/div[1]/div/section/node()') if section_node is None else section_node
@@ -51,22 +47,12 @@ class SolanaNewsSpider(scrapy.Spider):
         section_contents = section_node.getall()
         clean_sections = list()
         for content in section_contents:
-            content = SolanaNewsSpider.__remove_invalid_tags(content)
-            content = SolanaNewsSpider.__convert_weird_chars(content) if content != '' else ''
-            content = SolanaNewsSpider.cleaner.clean_html(content) if content != '' else ''
+            content = CleanUtils.remove_tags(content, ['section', 'style'])
+            content = CleanUtils.convert_weird_chars(content) if content != '' else ''
+            content = CleanUtils.clean_attributes(content) if content != '' else ''
             if content != '':
                 clean_sections.append(content)
         return '<div>' + ''.join(clean_sections) + '</div>'
-
-    @staticmethod
-    def __convert_date_to_iso(date_str):
-        # 定義日期字符串的格式
-        date_format = "%d %B %Y"
-        # 解析日期字符串
-        date_obj = datetime.strptime(date_str, date_format)
-        date_obj.astimezone(timezone.utc)
-        iso_date_str = date_obj.isoformat()
-        return iso_date_str
 
     @staticmethod
     def __get_news_link_elements(response) -> List[scrapy.selector.unified.SelectorList]:
@@ -78,21 +64,3 @@ class SolanaNewsSpider(scrapy.Spider):
                 yield element
             else:
                 return
-
-    @staticmethod
-    def __remove_invalid_tags(html_content):
-        soup = BeautifulSoup(html_content, 'html.parser')
-        for section in soup.find_all('section'):
-            section.decompose()
-        for style in soup.find_all('style'):
-            style.decompose()
-        return str(soup)
-
-    @staticmethod
-    def __convert_weird_chars(html_content):
-        html_content = html_content.replace('“', '"')
-        html_content = html_content.replace('”', '"')
-        html_content = html_content.replace('‘', "'")
-        html_content = html_content.replace('’', "'")
-        html_content = html_content.replace('–', "-")
-        return html_content
