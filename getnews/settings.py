@@ -104,4 +104,4 @@ ITEM_PIPELINES = {
 }
 
 # SPLASH
-SPLASH_URL = 'http://splash-agent.2local:8050'
+SPLASH_URL = 'http://splash-agent.local:8050'
