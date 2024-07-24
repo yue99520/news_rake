@@ -25,12 +25,15 @@ class DebugOutputPipeline:
             - content (str, include html tags)
             - platform (str)
         """
-        if spider.name not in ['solana_news', 'solana_medium', 'theblock', 'followin']:
+        if spider.name not in ['solana_news', 'solana_medium', 'theblock', 'followin', 'coindesk']:
             return item
         directory = f'output/{spider.name}'
         if not os.path.exists(directory):
             os.makedirs(directory)
-        with open(directory + '/' + item['url'].split('/')[-1] + '.html', 'w') as f:
+        url: str = item['url']
+        if url.endswith("/"):
+            url = url[:-1]
+        with open(directory + '/' + url.split('/')[-1] + '.html', 'w') as f:
             f.write("<html>")
             f.write("<head>")
             f.write("<meta charset=\"UTF-8\">")
