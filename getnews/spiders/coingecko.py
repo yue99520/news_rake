@@ -1,5 +1,5 @@
 import scrapy
-
+##使用requests 獲得403錯誤
 
 class CoingeckoSpider(scrapy.Spider):
     name = "coingecko"
