@@ -24,7 +24,7 @@ class ZombitSpider(scrapy.Spider):
             if link_url:
                 link_url = response.urljoin(link_url)
             # 解析新聞來源
-            source = article.xpath('.//a[@class="post-author keychainify-checked"]/div[@class="name"]/text()').get()
+            source = article.xpath('.//a[@class="post-author"]/div[@class="name"]/text()').get()
 
             yield {
                 'title': title,

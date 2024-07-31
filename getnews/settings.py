@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = "getnews.spiders"
 #USER_AGENT = "getnews (+http://www.yourdomain.com)"
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -103,5 +103,23 @@ ITEM_PIPELINES = {
     'getnews.pipelines.DebugOutputPipeline': 301,
 }
 
+
 # SPLASH
-SPLASH_URL = 'http://splash-agent.local:8050'
+SPLASH_URL = 'http://localhost:8050'
+
+# 添加本地主機到允許的域名列表
+ALLOWED_DOMAINS = ['foresightnews.pro', 'localhost', 'splash-agent.local']
+
+# 添加 splash 代理域名到允許的域名列表
+OFFSITE_DOMAINS = ['foresightnews.pro', 'splash-agent.local']
+
+# 重新定義 User-Agent
+DEFAULT_REQUEST_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36',
+}
+
+REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
+TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+FEED_EXPORT_ENCODING = "utf-8"
+
+
