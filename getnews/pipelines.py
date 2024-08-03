@@ -25,7 +25,7 @@ class DebugOutputPipeline:
             - content (str, include html tags)
             - platform (str)
         """
-        if spider.name not in ['solana_news', 'solana_medium', 'theblock', 'followin', 'coindesk']:
+        if spider.name not in ['solana_news', 'solana_medium', 'theblock', 'followin', 'coindesk', 'foresight']:
             return item
         directory = f'output/{spider.name}'
         if not os.path.exists(directory):
@@ -41,7 +41,10 @@ class DebugOutputPipeline:
             f.write("</head>")
             f.write("<body>")
             f.write("<h2>" + item['title'] + "</h2>")
-            f.write("<p>" + item['date'] + "</p>")
+            if item['date'] is not None:
+                f.write("<p>" + item['date'] + "</p>")
+            if item['url'] is not None:
+                f.write(f'<a href="{item["url"]}">' + item['url'] + '</a>')
             f.write(item['content'])
             f.write("</body></html>")
         return item
