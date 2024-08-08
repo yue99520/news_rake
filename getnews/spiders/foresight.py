@@ -4,7 +4,7 @@ from scrapy_splash import SplashRequest
 
 class ForesightSpider(scrapy.Spider):
     name = "foresight"
-    allowed_domains = ["foresightnews.pro"]
+    allowed_domains = ["foresightnews.pro","localhost"]
     start_urls = ["https://foresightnews.pro/news"]
     def start_requests(self):
         for url in self.start_urls:
