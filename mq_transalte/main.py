@@ -12,21 +12,7 @@ QUEUE_NAME = 'scrapy_queue'
 
 async def translate_text(text: str) -> str:
     return text  # for now, we'll return the original text
-    # api_key = os.getenv('CHATGPT_API_KEY')  # 假設你使用環境變數來儲存 API 密鑰
-    # url = 'https://api.openai.com/v1/engines/text-davinci-003/completions'
-    # headers = {
-    #     'Authorization': f'Bearer {api_key}',
-    #     'Content-Type': 'application/json'
-    # }
-    # payload = {
-    #     'prompt': f'Translate the following text to English:\n\n{text}',
-    #     'max_tokens': 60
-    # }
-
-    # async with ClientSession() as session:
-    #     async with session.post(url, headers=headers, json=payload) as response:
-    #         result = await response.json()
-    #         return result.get('choices', [{}])[0].get('text', '').strip()
+   
 
 async def on_message(message: aio_pika.IncomingMessage):
     async with message.process():

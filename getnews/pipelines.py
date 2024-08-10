@@ -13,6 +13,7 @@ class DebugOutputPipeline:
         self.is_production = False # os.getenv('ENV', 'development') == 'production'
 
         try:
+            print("Connecting to RabbitMQ...", os.getenv('RABBITMQ_HOST', 'localhost'))
             rabbitmq_host = os.getenv('RABBITMQ_HOST', 'localhost')
             rabbitmq_user = os.getenv('RABBITMQ_USER', 'user')
             rabbitmq_pass = os.getenv('RABBITMQ_PASS', 'password')
