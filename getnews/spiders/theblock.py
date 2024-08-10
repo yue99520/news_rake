@@ -7,7 +7,7 @@ from scrapy_splash import request
 THEBLOCK_FQDN = "www.theblock.co"
 
 
-class TheblockSpider(scrapy.Spider):
+class TheBlockSpider(scrapy.Spider):
     name = "theblock"
     allowed_domains = ["www.theblock.co", "splash-agent.local", "splash-agent.2local"]
     start_urls = ["https://www.theblock.co/sitemap_tbco_news.xml"]
