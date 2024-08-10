@@ -5,6 +5,7 @@ from aiohttp import ClientSession
 import json
 import os
 import requests
+import google.generativeai as genai
 
 # RabbitMQ 
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
@@ -17,8 +18,14 @@ NOTION_API_URL = "https://api.notion.com/v1/pages/"
 NOTION_API_KEY = os.getenv('NOTION_API_KEY')  
 NOTION_DATABASE_ID = os.getenv('NOTION_DATABASE_ID')
 
+# Generative AI
+MODEL_API_KEY = os.getenv('MODEL_API_KEY')
+genai.configure(api_key=MODEL_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
 async def translate_text(text: str) -> str:
-   return text # will implement this later
+    response = model.generate_content(f"Translate this text to English:/n/n {text}")
+    return response
 
 def send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language):
     payload = json.dumps({
