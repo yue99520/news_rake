@@ -33,7 +33,7 @@ class TheBlockSpider(scrapy.Spider):
             yield request.SplashRequest(url, headers=headers, callback=self.parse, args={'wait': 2})
 
     def parse(self, response, **kwargs):
-        print(response)
+        # print(response)
         for article_info in self.__get_news_link_elements(response):
             yield request.SplashRequest(article_info['article_url'],
                                         callback=self.__parse_article,
