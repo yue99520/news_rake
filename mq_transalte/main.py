@@ -4,28 +4,134 @@ from aio_pika import Message
 from aiohttp import ClientSession
 import json
 import os
+import requests
+import google.generativeai as genai
 
+# RabbitMQ 
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
-RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'user')
-RABBITMQ_PASS = os.getenv('RABBITMQ_PASS', 'password')
+RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')
+RABBITMQ_PASS = os.getenv('RABBITMQ_PASS', 'guest')
 QUEUE_NAME = 'scrapy_queue'
 
+# Notion API 
+NOTION_API_URL = "https://api.notion.com/v1/pages/"
+NOTION_API_KEY = os.getenv('NOTION_API_KEY')  
+NOTION_DATABASE_ID = os.getenv('NOTION_DATABASE_ID')
+
+# Generative AI
+MODEL_API_KEY = os.getenv('MODEL_API_KEY')
+genai.configure(api_key=MODEL_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
+
 async def translate_text(text: str) -> str:
-    return text  # for now, we'll return the original text
-   
+    response = model.generate_content(f"Translate this text to English:/n/n {text}")
+    return response
+
+def send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language):
+    payload = json.dumps({
+        "parent": {
+            "database_id": NOTION_DATABASE_ID
+        },
+        "properties": {
+            "Platform name": {
+                "title": [
+                    {
+                        "text": {
+                            "content": platform_name
+                        }
+                    }
+                ]
+            },
+            "News topic CN": {
+                "rich_text": [
+                    {
+                        "type": "text",
+                        "plain_text": news_topic_cn
+                    }
+                ]
+            },
+            "News topic ENG": {
+                "rich_text": [
+                    {
+                        "type": "text",
+                        "plain_text": news_topic_eng
+                    }
+                ]
+            },
+            "URL": {
+                "url": url
+            },
+            "Content CN": {
+                "rich_text": [
+                    {
+                        "type": "text",
+                        "plain_text": content_cn
+                    }
+                ]
+            },
+            "Content ENG": {
+                "rich_text": [
+                    {
+                        "type": "text",
+                        "plain_text": content_eng
+                    }
+                ]
+            },
+            "News pic": {
+                "files": [
+                    {
+                        "name": news_pic["ImageName"],
+                        "external": {
+                            "url": news_pic["ImageURL"]
+                        }
+                    }
+                ]
+            },
+            "Date": {
+                "date": {
+                    "start": date,
+                    "end": None
+                }
+            },
+            "Language": {
+                "multi_select": [
+                    {
+                        "name": origin_language
+                    }
+                ]
+            }
+        }
+    })
+
+    headers = {
+        'Authorization': f'Bearer {NOTION_API_KEY}',
+        'Content-Type': 'application/json',
+        'Notion-Version': '2021-05-13'
+    }
+
+    response = requests.post(NOTION_API_URL, headers=headers, data=payload)
+    print(response.text)
 
 async def on_message(message: aio_pika.IncomingMessage):
     async with message.process():
         try:
-            print("Received message", message.body)
             body = message.body.decode('utf-8')
             item = json.loads(body)
             text = item.get('content', '')
 
-            # translate the text
             translated_text = await translate_text(text)
-            print(f"Original content:\n{text}")
-            print(f"Translated content:\n{translated_text}")
+            
+            platform_name = item.get('platform', '')
+            news_topic_cn = item.get('title', '')
+            news_topic_eng = 'Translated Title'  
+            url = item.get('url', '')
+            content_cn = item.get('content', '')
+            content_eng = translated_text
+            news_pic = {"ImageName": "example.jpg", "ImageURL": "http://example.com/image.jpg"}  
+            date = item.get('date', '')
+            origin_language = 'Chinese'  
+
+            send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language)
 
         except Exception as e:
             print(f"Failed to process message: {e}")
