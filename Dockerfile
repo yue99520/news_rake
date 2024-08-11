@@ -8,4 +8,4 @@ WORKDIR /app
 
 RUN poetry install
 
-CMD [ "poetry", "run","scrapy", "runspider", "./getnews/spiders/solana_medium.py" ]
+CMD [ "poetry", "run","python", "main.py" ]

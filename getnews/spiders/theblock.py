@@ -7,7 +7,7 @@ from scrapy_splash import request
 THEBLOCK_FQDN = "www.theblock.co"
 
 
-class TheblockSpider(scrapy.Spider):
+class TheBlockSpider(scrapy.Spider):
     name = "theblock"
     allowed_domains = ["www.theblock.co", "splash-agent.local", "splash-agent.2local"]
     start_urls = ["https://www.theblock.co/sitemap_tbco_news.xml"]
@@ -33,7 +33,7 @@ class TheblockSpider(scrapy.Spider):
             yield request.SplashRequest(url, headers=headers, callback=self.parse, args={'wait': 2})
 
     def parse(self, response, **kwargs):
-        print(response)
+        # print(response)
         for article_info in self.__get_news_link_elements(response):
             yield request.SplashRequest(article_info['article_url'],
                                         callback=self.__parse_article,
