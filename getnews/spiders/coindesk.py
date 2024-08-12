@@ -1,7 +1,7 @@
 import scrapy
 from scrapy.http import XmlResponse, HtmlResponse
 
-from getnews.spiders.clean_utils import CleanUtils
+from getnews.utils.clean_utils import CleanUtils
 
 
 class CoindeskSpider(scrapy.Spider):
