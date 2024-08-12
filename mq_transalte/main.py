@@ -9,8 +9,8 @@ import google.generativeai as genai
 
 # RabbitMQ 
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
-RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'guest')
-RABBITMQ_PASS = os.getenv('RABBITMQ_PASS', 'guest')
+RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'user')
+RABBITMQ_PASS = os.getenv('RABBITMQ_PASS', 'password')
 QUEUE_NAME = 'scrapy_queue'
 
 # Notion API 
@@ -23,11 +23,21 @@ MODEL_API_KEY = os.getenv('MODEL_API_KEY')
 genai.configure(api_key=MODEL_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-async def translate_text(text: str) -> str:
+async def translate_text_en(text: str) -> str:
     response = model.generate_content(f"Translate this text to English:/n/n {text}")
     return response
 
+async def translate_text_zh(text: str) -> str:
+    response = model.generate_content(f"幫我翻譯成繁體中文:/n/n {text}")
+    return response
+
+async def to_normal_text(text: str) -> str:
+    response = model.generate_content(f"幫我轉成正常的文字 去掉html tag:/n/n {text}")
+    return response.text
+
 def send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language):
+    print('陮進諾')
+    print(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language)
     payload = json.dumps({
         "parent": {
             "database_id": NOTION_DATABASE_ID
@@ -119,15 +129,15 @@ async def on_message(message: aio_pika.IncomingMessage):
             item = json.loads(body)
             text = item.get('content', '')
 
-            translated_text = await translate_text(text)
+            translated_text = await translate_text_en(text)
             
             platform_name = item.get('platform', '')
             news_topic_cn = item.get('title', '')
             news_topic_eng = 'Translated Title'  
             url = item.get('url', '')
-            content_cn = item.get('content', '')
+            content_cn = await to_normal_text(item.get('content', ''))
             content_eng = translated_text
-            news_pic = {"ImageName": "example.jpg", "ImageURL": "http://example.com/image.jpg"}  
+            news_pic = {"ImageName": "example.jpg", "ImageURL": ""}  
             date = item.get('date', '')
             origin_language = 'Chinese'  
 

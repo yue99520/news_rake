@@ -1,6 +1,7 @@
 import os
 import sys
 import pika
+import json
 from itemadapter import ItemAdapter
 
 class GetnewsPipeline:
@@ -52,11 +53,11 @@ class DebugOutputPipeline:
             'content': item['content'],
             'platform': item['platform']
         }
-
+        # help me send json type item
         self.channel.basic_publish(
             exchange='',
             routing_key=self.queue_name,
-            body=str(message),
+            body=json.dumps(message),
             properties=pika.BasicProperties(
                 delivery_mode=2, 
             )

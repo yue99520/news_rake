@@ -5,8 +5,8 @@ import scrapy
 from scrapy.selector import SelectorList
 from scrapy_splash import SplashRequest
 
-from getnews.spiders.clean_utils import CleanUtils
-from getnews.spiders.time_utils import TimeUtils
+from getnews.utils.clean_utils import CleanUtils
+from getnews.utils.time_utils import TimeUtils
 
 SOLANA_FQDN = "solanafoundation.medium.com"
 
