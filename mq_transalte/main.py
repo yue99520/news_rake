@@ -26,17 +26,42 @@ genai.configure(api_key=MODEL_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 async def translate_text_en(text: str) -> str:
-    response = model.generate_content(f"Translate this text to English:/n/n {text}")
+    response = model.generate_content(f"Translate this text to English help me type setting, not only one block, but no html tag and eng :/n/n {text}")
+    return response.text
+
+async def translate_title_en(text: str) -> str:
+    response = model.generate_content(f"Translate this title to English, no add anything:/n/n {text}")
     return response.text
 
 async def translate_text_zh(text: str) -> str:
     response = model.generate_content(f"幫我翻譯成繁體中文:/n/n {text}")
     return response.text
 
-async def to_normal_text(text: str) -> str:
-    response = model.generate_content(f"幫我轉成正常的文字 去掉html tag:/n/n {text}")
+async def translate_title_zh(text: str) -> str:
+    response = model.generate_content(f"幫我翻譯成繁體中文，不要亂加:/n/n {text}")
     return response.text
 
+async def to_normal_text(text: str) -> str:
+    response = model.generate_content(f"幫我轉成正常的文字 去掉htmltag 但格式換行的br要留給我 但不要改動原本語言:/n/n {text}")
+    return response.text
+
+def get_platfome_lang(name: str) -> str:
+    if name in ['solana_news', 'solana_medium', 'coindesk', 'decrypt']:
+        return 'EN'
+    else:
+        return 'CN'
+
+def platform_img(name: str) -> str:
+    # use a dict to store the image url
+    imgList = {
+        'solana_medium': 'https://upload.wikimedia.org/wikipedia/en/b/b9/Solana_logo.png',
+        'solana_news': 'https://upload.wikimedia.org/wikipedia/en/b/b9/Solana_logo.png',
+        'coindesk': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTO20V5GgEjI_m10je_LbHnkBM_TaRm1-kE9A&s',
+        'decrypt': 'https://upload.wikimedia.org/wikipedia/en/b/b9/Solana_logo.png',
+        'followin': 'https://play-lh.googleusercontent.com/GTpsvKFZZ0cv5_au5LciVcrEWEVe6_P1xUj47wz0QgwUuHF93ZvojTW1Uj19nJxIBq4',
+        'foreseight': 'https://pbs.twimg.com/card_img/1821735526829060096/9WQCjdWx?format=jpg&name=large',       
+    }
+    return imgList.get(name, 'https://upload.wikimedia.org/wikipedia/en/b/b9/Solana_logo.png')
 def send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language):
     print(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language)
     payload = json.dumps({
@@ -133,20 +158,33 @@ async def on_message(message: aio_pika.IncomingMessage):
             body = message.body.decode('utf-8')
             item = json.loads(body)
             text = item.get('content', '')
-
-            translated_text = await translate_text_en(text)
-            
             platform_name = item.get('platform', '')
-            news_topic_cn = item.get('title', '')
-            news_topic_eng = 'Translated Title'  
-            url = item.get('url', '')
-            content_cn = await to_normal_text(item.get('content', ''))
-            content_eng = translated_text
-            news_pic = {"ImageName": "example.jpg", "ImageURL": ""}  
-            date = item.get('date', '')
-            origin_language = 'CN'  
 
-            send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language)
+            if (get_platfome_lang(platform_name) == 'EN'):
+                translated_text = await translate_text_zh(text)
+                news_topic_eng = item.get('title', '')
+                news_topic_cn = await translate_title_zh(news_topic_eng)
+                url = item.get('url', '')
+                content_cn = translated_text
+                content_eng = await to_normal_text(item.get('content', ''))
+                news_pic = {"ImageName": f"{platform_name}.jpg", "ImageURL": ""}  
+                date = item.get('date', '')
+                origin_language = get_platfome_lang(platform_name)
+
+                send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language)
+
+            else:
+                translated_text = await translate_text_en(text)
+                news_topic_cn = item.get('title', '')
+                news_topic_eng = await translate_title_en(news_topic_cn)
+                url = item.get('url', '')
+                content_cn = await to_normal_text(item.get('content', ''))
+                content_eng = translated_text
+                news_pic = {"ImageName": f"{platform_name}.jpg", "ImageURL": ""}  
+                date = item.get('date', '')
+                origin_language = get_platfome_lang(platform_name) 
+
+                send_to_notion(platform_name, news_topic_cn, news_topic_eng, url, content_cn, content_eng, news_pic, date, origin_language)
 
         except Exception as e:
             print(f"Failed to process message: {e}")
