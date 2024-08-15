@@ -34,5 +34,6 @@ class ForesightSpider(scrapy.Spider):
                 'platform': 'foresightnews',
                 'date': article_date,
                 'title': title,
-                'content': content
+                'content': content,
+                'language': 'zh_tw',
             }

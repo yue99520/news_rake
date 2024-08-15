@@ -18,7 +18,7 @@ def run_spider():
     # no content
     # process.crawl(sp.TheBlockSpider)
     # no content
-    process.crawl(sp.ZombitSpider)
+    # process.crawl(sp.ZombitSpider)
 
 
     process.start()  # the script will block here until the crawling is finished

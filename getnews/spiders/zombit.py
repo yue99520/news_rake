@@ -37,7 +37,7 @@ class ZombitSpider(scrapy.Spider):
             'date': article_date,
             'title': title,
             'content': content,
-            'language': 'en',
+            'language': 'zh_tw',
         }
 
     @staticmethod

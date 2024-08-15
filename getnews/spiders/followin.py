@@ -41,5 +41,6 @@ class FollowinSpider(scrapy.Spider):
             'platform': FollowinSpider.name,
             'date': article_date,
             'title': title,
-            'content': content
+            'content': content,
+            'language': 'zh_tw',
         }
