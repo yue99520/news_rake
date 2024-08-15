@@ -2,7 +2,7 @@ from typing import List
 
 import scrapy
 from scrapy.selector import SelectorList
-
+from markdownify import markdownify
 from getnews.utils.clean_utils import CleanUtils
 from getnews.utils.time_utils import TimeUtils
 
@@ -39,7 +39,8 @@ class SolanaNewsSpider(scrapy.Spider):
             'platform': SOLANA_FQDN,
             'date': article_date,
             'title': title,
-            'content': content
+            'content': content,
+            'language': 'en',
         }
 
     @staticmethod
@@ -52,7 +53,7 @@ class SolanaNewsSpider(scrapy.Spider):
             content = CleanUtils.clean_attributes(content) if content != '' else ''
             if content != '':
                 clean_sections.append(content)
-        return '<div>' + ''.join(clean_sections) + '</div>'
+        return markdownify(''.join(clean_sections), heading_style="ATX")
 
     @staticmethod
     def __get_news_link_elements(response) -> List[scrapy.selector.unified.SelectorList]:

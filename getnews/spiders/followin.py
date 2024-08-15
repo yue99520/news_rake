@@ -1,6 +1,6 @@
 import scrapy
 from scrapy.http import XmlResponse, HtmlResponse
-
+from markdownify import markdownify
 
 class FollowinSpider(scrapy.Spider):
     name = "followin"
@@ -35,10 +35,12 @@ class FollowinSpider(scrapy.Spider):
         article_date = response.meta['lastmod']
         title = response.xpath('//h1/text()').get()
         content = response.xpath('//*[@id="article-content"]').get()
+        content = markdownify(content, heading_style="ATX")
         yield {
             'url': article_url,
             'platform': FollowinSpider.name,
             'date': article_date,
             'title': title,
-            'content': content
+            'content': content,
+            'language': 'zh_tw',
         }

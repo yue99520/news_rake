@@ -4,7 +4,7 @@ from typing import List
 import scrapy
 from scrapy.selector import SelectorList
 from scrapy_splash import SplashRequest
-
+from markdownify import markdownify
 from getnews.utils.clean_utils import CleanUtils
 from getnews.utils.time_utils import TimeUtils
 
@@ -13,7 +13,7 @@ SOLANA_FQDN = "solanafoundation.medium.com"
 
 class SolanaMediumSpider(scrapy.Spider):
     name = "solana_medium"
-    allowed_domains = ["medium.com", "splash-agent.local", "splash-agent.2local"]
+    allowed_domains = ["medium.com", "localhost","splash-agent.local", "splash-agent.2local"]
     start_urls = ["https://solanafoundation.medium.com"]
 
     def start_requests(self):
@@ -53,13 +53,15 @@ class SolanaMediumSpider(scrapy.Spider):
         content = CleanUtils.remove_tags(content, ['style', 'script'])
         content = CleanUtils.convert_weird_chars(content)
         content = CleanUtils.clean_attributes(content)
+        content = markdownify(content, heading_style="ATX")
 
         yield {
             'url': article_url,
             'platform': SOLANA_FQDN,
             'date': article_date,
             'title': title,
-            'content': content
+            'content': content,
+            'language': 'en',
         }
 
     @staticmethod

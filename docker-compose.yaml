@@ -19,3 +19,11 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: user
       RABBITMQ_PASS: password
+  splash:
+    image: scrapinghub/splash
+    ports:
+      - "8050:8050"
+    environment:
+      - SPLASH_MAX_TIMEOUT=3600  # Set the maximum timeout for requests
+      - ENABLE_ADBLOCK=1         # Enable adblock to reduce ads in rendered pages
+    restart: unless-stopped

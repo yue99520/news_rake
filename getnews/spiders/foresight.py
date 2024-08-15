@@ -1,6 +1,7 @@
 import itertools
 from datetime import datetime
 from zoneinfo import ZoneInfo
+from markdownify import markdownify
 
 import scrapy
 from scrapy_splash import SplashRequest
@@ -27,11 +28,12 @@ class ForesightSpider(scrapy.Spider):
             title = article.xpath('.//a[@class="news_body_title"]/text()').get()
             article_url = response.urljoin(article.xpath('.//a[@class="news_body_title"]/@href').get())
             content = article.xpath('.//div[@class="news_body_content"]/span/text()').get()
-
+            content = markdownify(content, heading_style="ATX")
             yield {
                 'url': article_url,
                 'platform': 'foresightnews',
                 'date': article_date,
                 'title': title,
-                'content': content
+                'content': content,
+                'language': 'zh_tw',
             }
