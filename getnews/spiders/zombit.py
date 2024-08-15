@@ -1,5 +1,6 @@
 from typing import Iterable
 import scrapy
+from markdownify import markdownify
 
 class ZombitSpider(scrapy.Spider):
     name = "zombit"
@@ -11,26 +12,39 @@ class ZombitSpider(scrapy.Spider):
             yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
-        # 選擇所有新聞文章的元素
         articles = response.xpath('//div[@class="post-item row mb-4"]')
 
         for article in articles:
-            # 解析標題
             title = article.xpath('.//h3[@class="post-title max-two-lines"]/a/text()').get()
-            # 解析日期
             date = article.xpath('.//div[@class="post-date"]/text()').get()
-            # 解析鏈接
             link_url = article.xpath('.//h3[@class="post-title max-two-lines"]/a/@href').get()
             if link_url:
                 link_url = response.urljoin(link_url)
-            # 解析新聞來源
-            source = article.xpath('.//a[@class="post-author"]/div[@class="name"]/text()').get()
-            
+                print('link_url',link_url)
 
-            # @TODO: where is the content?
-            yield {
-                'title': title,
-                'date': date,
-                'link_url': link_url,
-                'source': source
-            }
+            yield scrapy.Request(link_url, callback=self.parse_news, meta={'lastmod': date, 'title': title})
+
+    def parse_news(self, response):
+        article_url = response.url
+        article_date = response.meta['lastmod']
+        title = response.meta['title']
+        paragraphs = response.xpath('//div[@class="entry-content"]').getall()
+        content = self._content_cleaning_and_rebuilding(paragraphs)
+
+        yield {
+            'url': article_url,
+            'platform': self.name,
+            'date': article_date,
+            'title': title,
+            'content': content,
+            'language': 'en',
+        }
+
+    @staticmethod
+    def _content_cleaning_and_rebuilding(paragraphs):
+        clean_paragraphs = []
+        for paragraph in paragraphs:
+            paragraph = markdownify(paragraph, heading_style="ATX")
+            if paragraph.strip():
+                clean_paragraphs.append(paragraph)
+        return '\n\n'.join(clean_paragraphs)

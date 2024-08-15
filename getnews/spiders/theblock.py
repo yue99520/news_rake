@@ -3,6 +3,7 @@ from typing import List, Dict
 
 import scrapy
 from scrapy_splash import request
+from markdownify import markdownify
 
 THEBLOCK_FQDN = "www.theblock.co"
 
@@ -73,12 +74,15 @@ class TheBlockSpider(scrapy.Spider):
         image = article_node.xpath('.//div[contains(@class, "articleFeatureImage")]').get()
         if image:
             contents.append(image)
-        contents.extend(article_node.xpath('.//div[@id="articleContent"]/span/p').getall())
+        contents.extend(article_node.xpath('//*[@id="articleContent"]').getall())
         article_content = '<div>' + ''.join(contents) + '</div>'
+        # print('the block', contents)
+        article_content = markdownify(article_content, heading_style="ATX")
         yield {
             'url': article_url,
             'platform': THEBLOCK_FQDN,
             'date': article_date,
             'title': article_title,
             'content': article_content,
+            'language': 'en',
         }

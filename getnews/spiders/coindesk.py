@@ -1,6 +1,6 @@
 import scrapy
 from scrapy.http import XmlResponse, HtmlResponse
-
+from markdownify import markdownify
 from getnews.utils.clean_utils import CleanUtils
 
 
@@ -44,16 +44,15 @@ class CoindeskSpider(scrapy.Spider):
             'platform': CoindeskSpider.name,
             'date': article_date,
             'title': title,
-            'content': content
+            'content': content,
+            'language': 'en',
         }
 
     @staticmethod
     def __content_cleaning_and_rebuilding(paragraphs):
         clean_paragraphs = list()
         for paragraph in paragraphs:
-            paragraph = CleanUtils.remove_tags(paragraph, ['section', 'style', 'script'])
-            paragraph = CleanUtils.convert_weird_chars(paragraph) if paragraph != '' else ''
-            paragraph = CleanUtils.clean_attributes(paragraph) if paragraph != '' else ''
+            paragraph = markdownify(paragraph, heading_style="ATX")
             if paragraph != '':
                 clean_paragraphs.append(paragraph)
-        return '<div>' + ''.join(clean_paragraphs) + '</div>'
+        return ''.join(clean_paragraphs)
