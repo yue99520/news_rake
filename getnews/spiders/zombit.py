@@ -25,7 +25,9 @@ class ZombitSpider(scrapy.Spider):
                 link_url = response.urljoin(link_url)
             # 解析新聞來源
             source = article.xpath('.//a[@class="post-author"]/div[@class="name"]/text()').get()
+            
 
+            # @TODO: where is the content?
             yield {
                 'title': title,
                 'date': date,

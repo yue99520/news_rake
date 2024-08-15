@@ -9,7 +9,7 @@ THEBLOCK_FQDN = "www.theblock.co"
 
 class TheBlockSpider(scrapy.Spider):
     name = "theblock"
-    allowed_domains = ["www.theblock.co", "splash-agent.local", "splash-agent.2local"]
+    allowed_domains = ["www.theblock.co", "localhost","splash-agent.local", "splash-agent.2local"]
     start_urls = ["https://www.theblock.co/sitemap_tbco_news.xml"]
 
     custom_settings = {
