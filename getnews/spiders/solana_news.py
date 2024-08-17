@@ -3,6 +3,8 @@ from typing import List
 import scrapy
 from scrapy.selector import SelectorList
 from markdownify import markdownify
+
+from getnews.storage import SolanaNewsStorageHelper
 from getnews.utils.clean_utils import CleanUtils
 from getnews.utils.time_utils import TimeUtils
 
@@ -13,11 +15,14 @@ class SolanaNewsSpider(scrapy.Spider):
     name = "solana_news"
     allowed_domains = [SOLANA_FQDN]
     start_urls = [f"https://{SOLANA_FQDN}/news"]
+    storage_helper = SolanaNewsStorageHelper()
 
     def parse(self, response, **kwargs):
         for element in self.__get_news_link_elements(response):
             article_path = element.xpath('@href').get()
             article_url = f"https://{SOLANA_FQDN}{article_path}"
+            if self.storage_helper.does_exist(url=article_url):
+                continue
             yield scrapy.Request(article_url, callback=self.__parse_article, meta={'url': article_path})
 
     @staticmethod

@@ -31,41 +31,37 @@ class SolanaNewsStorageHelper(URLBasedIdentifierHelper):
     pass
 
 
-class SolanaMediumStorageHelper(BaseStorageHelper):
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+class SolanaMediumStorageHelper(URLBasedIdentifierHelper):
+    pass
 
 
-class TheBlockStorageHelper(BaseStorageHelper):
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+class TheBlockStorageHelper(URLBasedIdentifierHelper):
+    pass
 
 
-class ForesightStorageHelper(BaseStorageHelper):
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+class ForesightStorageHelper(URLBasedIdentifierHelper):
+    pass
 
 
-class FollowinStorageHelper(BaseStorageHelper):
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+class FollowinStorageHelper(URLBasedIdentifierHelper):
+    pass
 
 
 class JinseStorageHelper(BaseStorageHelper):
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+    def safe_create_article(self, article) -> Tuple[bool, Article]:
+        return super().safe_create_article(article)
+
+    def does_exist(self, item, **kwargs):
+        return super().does_exist(item, **kwargs)
 
 
-class CoindeskStorageHelper(BaseStorageHelper):
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+class CoindeskStorageHelper(URLBasedIdentifierHelper):
+    pass
 
 
-class ZombitStorageHelper(BaseStorageHelper):
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+class ZombitStorageHelper(URLBasedIdentifierHelper):
+    pass
 
 
-class DecryptStorageHelper:
-    def does_exist(self, item, **kwargs) -> bool:
-        return False
+class DecryptStorageHelper(URLBasedIdentifierHelper):
+    pass

@@ -1,6 +1,8 @@
 import scrapy
 from scrapy.http import XmlResponse, HtmlResponse
 from markdownify import markdownify
+
+from getnews.storage import CoindeskStorageHelper
 from getnews.utils.clean_utils import CleanUtils
 
 
@@ -8,6 +10,7 @@ class CoindeskSpider(scrapy.Spider):
     name = "coindesk"
     allowed_domains = ["www.coindesk.com"]
     start_urls = ["https://www.coindesk.com/arc/outboundfeeds/news-sitemap-index-es/"]
+    storage_helper = CoindeskStorageHelper()
 
     custom_settings = {
         'DELAY_REQUEST': 0.3,
@@ -20,6 +23,8 @@ class CoindeskSpider(scrapy.Spider):
             return
         for url, lastmod in self.parse_sitemap(response):
             url = url.replace("/es", "")
+            if self.storage_helper.does_exist(url=url):
+                continue
             yield scrapy.Request(url, callback=self.parse_news, meta={'lastmod': lastmod})
 
     @staticmethod

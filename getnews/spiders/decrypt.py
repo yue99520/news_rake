@@ -2,16 +2,22 @@ import scrapy
 import feedparser
 import re
 from markdownify import markdownify
+
+from getnews.storage import DecryptStorageHelper
+
 SOLANA_FQDN = "decrypt.co"
+
+
 class DecryptSpider(scrapy.Spider):
     name = "decrypt"
     allowed_domains = ["decrypt.co"]
     start_urls = f"https://{SOLANA_FQDN}/feed"
+    storage_helper = DecryptStorageHelper()
 
     def start_requests(self):
             yield scrapy.Request(self.start_urls, callback=self.parse)
             
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         rss = feedparser.parse(response.body)
         # print(rss)
         for entry in rss.entries:
@@ -20,7 +26,7 @@ class DecryptSpider(scrapy.Spider):
             date = entry.get('published')
             url = entry.get('link')
             print('url',url)
-            if url and self.is_valid_url(url):
+            if url and self.is_valid_url(url) and not self.storage_helper.does_exist(url=url):
                 print('valid',url)
                 url = response.urljoin(url)
                 yield scrapy.Request(url, callback=self.parse_news, meta={'lastmod': date, 'title': title})
