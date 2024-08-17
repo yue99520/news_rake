@@ -17,20 +17,19 @@ async def test_process_item_translate_to_zh():
         "content": "Content",
         "language": "en"
     }
-    processed_items = await pipeline.process_item(item, None)
-    assert len(processed_items) == 2
+    processed_item = await pipeline.process_item(item, None)
 
-    zh = [item for item in processed_items if item['language'] == 'zh_tw']
-    assert len(zh) == 1
-    assert zh[0]['title'] == "翻譯後的標題"
-    assert zh[0]['content'] == "翻譯後的內容"
-    assert zh[0]['language'] == "zh_tw"
+    zh = processed_item["zh_tw"]
+    assert zh['title'] == "翻譯後的標題"
+    assert zh['content'] == "翻譯後的內容"
+    assert zh['language'] == "zh_tw"
 
-    en = [item for item in processed_items if item['language'] == 'en']
-    assert len(en) == 1
-    assert en[0]['title'] == "Title"
-    assert en[0]['content'] == "Content"
-    assert en[0]['language'] == "en"
+    en = processed_item["en"]
+    assert en['title'] == "Title"
+    assert en['content'] == "Content"
+    assert en['language'] == "en"
+
+    assert processed_item["origin_language"] == "en"
 
 
 @pytest.mark.asyncio
@@ -45,16 +44,16 @@ async def test_process_item_translate_to_en():
         "content": "內容",
         "language": "zh_tw"
     }
-    processed_items = await pipeline.process_item(item, None)
+    processed_item = await pipeline.process_item(item, None)
 
-    zh = [item for item in processed_items if item['language'] == 'zh_tw']
-    assert len(zh) == 1
-    assert zh[0]['title'] == "標題"
-    assert zh[0]['content'] == "內容"
-    assert zh[0]['language'] == "zh_tw"
+    zh = processed_item["zh_tw"]
+    assert zh['title'] == "標題"
+    assert zh['content'] == "內容"
+    assert zh['language'] == "zh_tw"
 
-    en = [item for item in processed_items if item['language'] == 'en']
-    assert len(en) == 1
-    assert en[0]['title'] == "Translated Title"
-    assert en[0]['content'] == "Translated Content"
-    assert en[0]['language'] == "en"
+    en = processed_item["en"]
+    assert en['title'] == "Translated Title"
+    assert en['content'] == "Translated Content"
+    assert en['language'] == "en"
+
+    assert processed_item["origin_language"] == "zh_tw"

@@ -13,23 +13,23 @@ class TranslatePipeline:
         self.translator = GeminiTranslate
 
     async def process_item(self, item, spider):
-        if item['language'] != 'en':
-            return {
-                "en": await self._to_en_item(item),
-                "zh_tw": item,
-                "origin_language": "en"
-            }
-        elif item['language'] != 'zh_tw':
+        if item['language'] == 'en':
             return {
                 "en": item,
                 "zh_tw": await self._to_zh_item(item),
+                "origin_language": "en"
+            }
+        elif item['language'] == 'zh_tw':
+            return {
+                "en": await self._to_en_item(item),
+                "zh_tw": item,
                 "origin_language": "zh_tw"
             }
         else:
             return {
                 "en": await self._to_en_item(item),
                 "zh_tw": await self._to_zh_item(item),
-                "origin_language": item['language']
+                "origin_language": "zh_tw"
             }
 
     async def _to_zh_item(self, item):
