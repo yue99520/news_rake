@@ -57,6 +57,7 @@ class StoragePipeline:
 
         storage_article = {
             "platform_name": platform_name,
+            "spider_name": spider.name,
             "url": item[origin_language]['url'],
             "date": item[origin_language]['date'],
             "news_pic": {"ImageName": f"{platform_name}.jpg", "ImageURL": ""},
@@ -70,7 +71,7 @@ class StoragePipeline:
         if not hasattr(spider, 'storage_helper'):
             raise Exception("Spider must have a storage_helper")
 
-        article, created = spider.storage_helper.safe_create_article(storage_article)
+        article, created = spider.storage_helper.safe_create_article(spider.name, storage_article)
         if created:
             spider.logger.info(f"Created article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
         else:
