@@ -3,7 +3,6 @@ import os
 import sys
 
 import pika
-from scrapy.exceptions import DropItem
 
 from .utils import GeminiTranslate
 
@@ -51,13 +50,12 @@ class TranslatePipeline:
 
 
 class StoragePipeline:
-    def __init__(self):
-        pass
-
     def process_item(self, item, spider):
         origin_language = item['origin_language']
         platform_name = item[origin_language]['platform_name']
-        storageItem = {
+        url = item[origin_language]['url']
+
+        storage_article = {
             "platform_name": platform_name,
             "url": item[origin_language]['url'],
             "date": item[origin_language]['date'],
@@ -68,6 +66,17 @@ class StoragePipeline:
             "content_cn": item['zh_tw']['content'],
             "content_eng": item['en']['content'],
         }
+
+        if not hasattr(spider, 'storage_helper'):
+            raise Exception("Spider must have a storage_helper")
+
+        article, created = spider.storage_helper.safe_create_article(storage_article)
+        if created:
+            spider.logger.info(f"Created article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
+        else:
+            spider.logger.warning(f"Skipped article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
+        return None
+
 
 class DebugOutputPipeline:
 
