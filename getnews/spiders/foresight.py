@@ -6,16 +6,20 @@ from markdownify import markdownify
 import scrapy
 from scrapy_splash import SplashRequest
 
+from getnews.storage import ForesightStorageHelper
+
 
 class ForesightSpider(scrapy.Spider):
     name = "foresight"
     allowed_domains = ["foresightnews.pro","localhost"]
     start_urls = ["https://foresightnews.pro/news"]
+    storage_helper = ForesightStorageHelper()
+
     def start_requests(self):
         for url in self.start_urls:
             yield SplashRequest(url, self.parse, args={'wait': 5})    
 
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         # 解析日期
         date_element = response.xpath('/html/body/div[1]/div/div/div[1]/div[1]/div/div[1]/div[1]/div[1]/span/span/div')
         date_month = date_element.xpath('./div[@class="collapse-title-month"]/text()').get()

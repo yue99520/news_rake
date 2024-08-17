@@ -5,6 +5,8 @@ import scrapy
 from scrapy_splash import request
 from markdownify import markdownify
 
+from getnews.storage import TheBlockStorageHelper
+
 THEBLOCK_FQDN = "www.theblock.co"
 
 
@@ -12,6 +14,7 @@ class TheBlockSpider(scrapy.Spider):
     name = "theblock"
     allowed_domains = ["www.theblock.co", "localhost","splash-agent.local", "splash-agent.2local"]
     start_urls = ["https://www.theblock.co/sitemap_tbco_news.xml"]
+    storage_helper = TheBlockStorageHelper()
 
     custom_settings = {
         'COOKIES_ENABLED': True,
@@ -31,6 +34,8 @@ class TheBlockSpider(scrapy.Spider):
         }
 
         for url in self.start_urls:
+            if self.storage_helper.does_exist(url=url):
+                continue
             yield request.SplashRequest(url, headers=headers, callback=self.parse, args={'wait': 2})
 
     def parse(self, response, **kwargs):

@@ -27,3 +27,12 @@ services:
       - SPLASH_MAX_TIMEOUT=3600  # Set the maximum timeout for requests
       - ENABLE_ADBLOCK=1         # Enable adblock to reduce ads in rendered pages
     restart: unless-stopped
+  postgres:
+    container_name: gen3-crawler-postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gen3_crawler
+    ports:
+      - "5432:5432"

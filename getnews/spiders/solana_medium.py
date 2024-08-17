@@ -5,6 +5,8 @@ import scrapy
 from scrapy.selector import SelectorList
 from scrapy_splash import SplashRequest
 from markdownify import markdownify
+
+from getnews.storage import SolanaMediumStorageHelper
 from getnews.utils.clean_utils import CleanUtils
 from getnews.utils.time_utils import TimeUtils
 
@@ -15,6 +17,7 @@ class SolanaMediumSpider(scrapy.Spider):
     name = "solana_medium"
     allowed_domains = ["medium.com", "localhost","splash-agent.local", "splash-agent.2local"]
     start_urls = ["https://solanafoundation.medium.com"]
+    storage_helper = SolanaMediumStorageHelper()
 
     def start_requests(self):
         for url in self.start_urls:
@@ -22,6 +25,8 @@ class SolanaMediumSpider(scrapy.Spider):
 
     def parse(self, response, **kwargs):
         for url in self.__get_article_link(response):
+            if self.storage_helper.does_exist(url=url):
+                continue
             yield SplashRequest(url, callback=self.__parse_article, endpoint='render.html', meta={
                 'url': url,
                 'splash': {

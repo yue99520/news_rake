@@ -2,10 +2,14 @@ import scrapy
 from scrapy.http import XmlResponse, HtmlResponse
 from markdownify import markdownify
 
+from getnews.storage import FollowinStorageHelper
+
+
 class FollowinSpider(scrapy.Spider):
     name = "followin"
     allowed_domains = ["followin.io"]
     start_urls = ["https://followin.io/unknow/sitemap/news.xml"]
+    storage_helper = FollowinStorageHelper()
     # languages = ["zh-Hant", "en"]
     custom_settings = {
         'DELAY_REQUEST': 0.5,
@@ -18,6 +22,8 @@ class FollowinSpider(scrapy.Spider):
             return
         for url, lastmod in self.parse_sitemap(response):
             url = url.replace("unknow", "zh-Hant")
+            if self.storage_helper.does_exist(url=url):
+                continue
             yield scrapy.Request(url, callback=self.parse_news, meta={'lastmod': lastmod})
 
     @staticmethod
