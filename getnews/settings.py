@@ -99,7 +99,9 @@ TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
 
 ITEM_PIPELINES = {
-    'getnews.pipelines.TranslatePipeline': 300,
+    'getnews.pipelines.ItemVerifyPipeline': 300,
+    'getnews.pipelines.TranslatePipeline': 301,
+    'getnews.pipelines.StoragePipeline': 302,
     # 'getnews.pipelines.DebugOutputPipeline': 301,
 }
 

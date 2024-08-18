@@ -67,6 +67,7 @@ class SolanaMediumSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'en',
+            'images': [],
         }
 
     @staticmethod

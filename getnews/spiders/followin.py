@@ -49,4 +49,5 @@ class FollowinSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'zh_tw',
+            'images': [],
         }

@@ -15,7 +15,7 @@ class BaseStorageHelper(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_spider_context_or_none(self, spider_name: str) -> SpiderContext:
+    def get_spider_context_or_none(self, spider_name: str) -> dict:
         raise NotImplementedError
 
 
@@ -56,10 +56,13 @@ class URLBasedIdentifierHelper(BaseStorageHelper):
             raise Exception("item must have a url")
         return Article.select().where(Article.url == kwargs['url']).exists()
 
-    def get_spider_context_or_none(self, spider_name: str) -> SpiderContext:
+    def get_spider_context_or_none(self, spider_name: str) -> dict:
         if not spider_name:
             raise Exception("spider_name must be provided")
-        return SpiderContext.get_or_none(SpiderContext.spider_name == spider_name)
+        query = (SpiderContext.select(SpiderContext, Article)
+                 .join(Article, on=(SpiderContext.latest_article_id == Article.id))
+                 .where(SpiderContext.spider_name == spider_name))
+        return query.dicts().first()
 
 
 class SolanaNewsStorageHelper(URLBasedIdentifierHelper):

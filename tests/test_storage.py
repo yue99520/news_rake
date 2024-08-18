@@ -86,7 +86,7 @@ class TestURLBasedIdentifierHelper(unittest.TestCase):
         # Create an article to generate a context
         article_data = {
             "platform_name": "test_platform",
-            "spider_name": "test_spider",
+            "spider_name": spider_name,
             "url": "https://example.com/news3",
             "date": datetime.now(),
             "news_pic": {"img3": "https://example.com/image3.jpg"},
@@ -96,12 +96,16 @@ class TestURLBasedIdentifierHelper(unittest.TestCase):
             "content_cn": "這是第三篇中文內容。",
             "content_eng": "This is the third English content."
         }
-        self.helper.safe_create_article(spider_name, article_data)
+        saved_article, created = self.helper.safe_create_article(spider_name, article_data)
+        self.assertTrue(created)
 
         # Now, there should be a context for this spider
         context = self.helper.get_spider_context_or_none(spider_name)
         self.assertIsNotNone(context)
-        self.assertEqual(context.spider_name, spider_name)
+        self.assertEqual(context["spider_name"], spider_name)
+        self.assertEqual(context["url"], saved_article.url)
+        self.assertEqual(context["latest_article_id"], saved_article.id)
+        self.assertEqual(context["news_topic_eng"], saved_article.news_topic_eng)
 
 
 if __name__ == '__main__':

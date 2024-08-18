@@ -1,3 +1,4 @@
+import json
 import unittest
 
 from getnews.spiders import SolanaNewsSpider
@@ -24,6 +25,8 @@ class TestArticleModel(unittest.TestCase):
     def test_article_creation(self):
         Article.create(
             url='https://example.com/article1',
+            platform_name="test_platform",
+            spider_name="test_spider",
             date='2024-08-17',
             news_pic={'img1': 'https://example.com/image1.jpg'},
             origin_language='en',
@@ -42,6 +45,8 @@ class TestArticleModel(unittest.TestCase):
     def test_get_spider_context(self):
         article = Article.create(
             url='https://example.com/article1',
+            platform_name="test_platform",
+            spider_name="test_spider",
             date='2024-08-17',
             news_pic={'img1': 'https://example.com/image1.jpg'},
             origin_language='en',
@@ -57,7 +62,7 @@ class TestArticleModel(unittest.TestCase):
         })
         query = (SpiderContext.select(SpiderContext, Article)
                  .join(Article, on=(SpiderContext.latest_article_id == Article.id))
-                 .where(Article.id == article.id and SpiderContext.spider_name == SolanaNewsSpider.name))
+                 .where(SpiderContext.spider_name == SolanaNewsSpider.name))
         data = query.dicts().get()
         assert data['extra_info']['test'] == '123'
         assert data['url'] == 'https://example.com/article1'

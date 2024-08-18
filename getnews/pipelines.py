@@ -1,10 +1,32 @@
 import asyncio
 import os
 import sys
+from datetime import datetime
 
 import pika
+from scrapy.exceptions import DropItem
 
 from .utils import GeminiTranslate
+
+
+class ItemVerifyPipeline:
+    def process_item(self, item, spider):
+        try:
+            assert 'url' in item, "url is required"
+            assert 'title' in item, "title is required"
+
+            assert 'date' in item, "date is required"
+            assert item['date'] is not None, "date is required"
+            assert datetime.fromisoformat(item['date']) is not None, "date is not a valid datetime"
+
+            assert 'content' in item, "content is required"
+            assert 'platform' in item, "platform is required"
+            assert 'language' in item, "language is required"
+            assert 'images' in item, "images is required"
+            assert isinstance(item["images"], list), "images must be a list"
+        except Exception as e:
+            spider.logger.error(f"[{spider.name}] Invalid item format. [{type(e).__name__}: {e}]")
+            raise DropItem("ItemVerifyPipeline")
 
 
 class TranslatePipeline:
@@ -52,7 +74,7 @@ class TranslatePipeline:
 class StoragePipeline:
     def process_item(self, item, spider):
         origin_language = item['origin_language']
-        platform_name = item[origin_language]['platform_name']
+        platform_name = item[origin_language]['platform']
         url = item[origin_language]['url']
 
         storage_article = {
@@ -60,7 +82,7 @@ class StoragePipeline:
             "spider_name": spider.name,
             "url": item[origin_language]['url'],
             "date": item[origin_language]['date'],
-            "news_pic": {"ImageName": f"{platform_name}.jpg", "ImageURL": ""},
+            "news_pic": item[origin_language]["images"],
             "origin_language": item['origin_language'],
             "news_topic_cn": item['zh_tw']['title'],
             "news_topic_eng": item['en']['title'],
