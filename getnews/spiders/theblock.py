@@ -32,7 +32,7 @@ class TheBlockSpider(scrapy.Spider):
         self.spider_context = self.storage_helper.get_spider_context_or_none(self.name)
         self.extra_info = self.spider_context['extra_info'] if self.spider_context else {
             'sitemap_index': 16,
-            'last_article_modified': None,
+            'last_article_modified': "2024-08-15 13:55 -04:00",
         }
         self.logger.info(f"theblock extra_info: {self.extra_info}")
 
