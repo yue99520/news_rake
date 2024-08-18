@@ -27,7 +27,8 @@ class ItemVerifyPipeline:
         except Exception as e:
             spider.logger.error(f"[{spider.name}] Invalid item format. [{type(e).__name__}: {e}]")
             raise DropItem("ItemVerifyPipeline")
-
+        
+        return item
 
 class TranslatePipeline:
 
