@@ -60,7 +60,7 @@ class StoragePipeline:
             "spider_name": spider.name,
             "url": item[origin_language]['url'],
             "date": item[origin_language]['date'],
-            "news_pic": {"ImageName": f"{platform_name}.jpg", "ImageURL": ""},
+            "news_pic": item[origin_language]["images"],
             "origin_language": item['origin_language'],
             "news_topic_cn": item['zh_tw']['title'],
             "news_topic_eng": item['en']['title'],
