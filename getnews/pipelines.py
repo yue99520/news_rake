@@ -2,10 +2,7 @@ import asyncio
 import os
 import sys
 from datetime import datetime
-
-import pika
 from scrapy.exceptions import DropItem
-
 from .utils import GeminiTranslate
 
 
@@ -107,25 +104,7 @@ class DebugOutputPipeline:
     def __init__(self):
         self.is_production = False  # os.getenv('ENV', 'development') == 'production'
         if self.is_production:
-            try:
-                print("Connecting to RabbitMQ...", os.getenv('RABBITMQ_HOST', 'localhost'))
-                rabbitmq_host = os.getenv('RABBITMQ_HOST', 'localhost')
-                rabbitmq_user = os.getenv('RABBITMQ_USER', 'user')
-                rabbitmq_pass = os.getenv('RABBITMQ_PASS', 'password')
-
-                credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_pass)
-                connection_params = pika.ConnectionParameters(
-                    host=rabbitmq_host,
-                    credentials=credentials
-                )
-                self.connection = pika.BlockingConnection(connection_params)
-                self.channel = self.connection.channel()
-                self.queue_name = 'scrapy_queue'
-
-                self.channel.queue_declare(queue=self.queue_name, durable=True)
-            except pika.exceptions.AMQPConnectionError as e:
-                print(f"Failed to connect to RabbitMQ: {e}", file=sys.stderr)
-                sys.exit(1)  # fail the spider
+            pass
 
     def process_item(self, item, spider):
         """
