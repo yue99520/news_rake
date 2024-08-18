@@ -52,7 +52,7 @@ class TranslatePipeline:
 class StoragePipeline:
     def process_item(self, item, spider):
         origin_language = item['origin_language']
-        platform_name = item[origin_language]['platform_name']
+        platform_name = item[origin_language]['platform']
         url = item[origin_language]['url']
 
         storage_article = {
