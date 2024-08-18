@@ -40,18 +40,19 @@ class TestURLBasedIdentifierHelper(unittest.TestCase):
         spider_name = "test_spider"
 
         # Create an article and check if it was created successfully
-        article, created = self.helper.safe_create_article(spider_name, article_data)
+        article, created = self.helper.safe_create_article(spider_name, article_data, extra_info={"test": "123"})
         self.assertTrue(created)
         self.assertEqual(article.url, article_data["url"])
         expected_article_id = article.id
 
         # Try to create the same article again and check that it's not created again
-        article, created = self.helper.safe_create_article(spider_name, article_data)
+        article, created = self.helper.safe_create_article(spider_name, article_data, extra_info={"test": "456"})
         self.assertFalse(created)
 
         # Check if the spider context was updated
         context = SpiderContext.get(SpiderContext.spider_name == spider_name)
         self.assertEqual(context.latest_article_id.id, expected_article_id)
+        self.assertEqual(context.extra_info, {"test": "123"})
 
     def test_does_exist(self):
         article_data = {
@@ -96,7 +97,7 @@ class TestURLBasedIdentifierHelper(unittest.TestCase):
             "content_cn": "這是第三篇中文內容。",
             "content_eng": "This is the third English content."
         }
-        saved_article, created = self.helper.safe_create_article(spider_name, article_data)
+        saved_article, created = self.helper.safe_create_article(spider_name, article_data, extra_info={"test": "123"})
         self.assertTrue(created)
 
         # Now, there should be a context for this spider
@@ -106,6 +107,7 @@ class TestURLBasedIdentifierHelper(unittest.TestCase):
         self.assertEqual(context["url"], saved_article.url)
         self.assertEqual(context["latest_article_id"], saved_article.id)
         self.assertEqual(context["news_topic_eng"], saved_article.news_topic_eng)
+        self.assertEqual(context["extra_info"], {"test": "123"})
 
 
 if __name__ == '__main__':

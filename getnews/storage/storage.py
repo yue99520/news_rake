@@ -7,11 +7,11 @@ from .postgres import Article, SpiderContext
 
 class BaseStorageHelper(abc.ABC):
     @abc.abstractmethod
-    def safe_create_article(self, spider_name: str, article) -> Tuple[bool, Article]:
+    def safe_create_article(self, spider_name: str, article, **kwargs) -> Tuple[bool, Article]:
         raise NotImplementedError
 
     @abc.abstractmethod
-    def does_exist(self, item, **kwargs):
+    def does_exist(self, item, **kwargs) -> bool:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -21,7 +21,7 @@ class BaseStorageHelper(abc.ABC):
 
 class URLBasedIdentifierHelper(BaseStorageHelper):
 
-    def safe_create_article(self, spider_name: str, article) -> Tuple[Article, bool]:
+    def safe_create_article(self, spider_name: str, article, **kwargs) -> Tuple[Article, bool]:
         """
         Atomically create a new article and update the context of the spider.
         return (remote_article, created)
@@ -34,24 +34,25 @@ class URLBasedIdentifierHelper(BaseStorageHelper):
                 return remote_article, False
 
             remote_article = Article.create(**article)
-            context = {
-                "spider_name": spider_name,
-                "latest_article_id": remote_article.id,
-                "extra_info": {},
-                "updated_at": datetime.now()
-            }
             remote_context = SpiderContext.get_or_none(SpiderContext.spider_name == spider_name)
+            now = datetime.now()
             if remote_context is None:
-                SpiderContext.create(**context)
+                SpiderContext.create(**{
+                    "spider_name": spider_name,
+                    "latest_article_id": remote_article.id,
+                    "extra_info": kwargs.get('extra_info', {}),
+                    "updated_at": now
+                })
             else:
+                remote_context.extra_info = kwargs.get('extra_info', remote_context.extra_info)
+
                 remote_context.latest_article_id = remote_article.id
-                remote_context.extra_info = context["extra_info"]
-                remote_context.updated_at = context["updated_at"]
+                remote_context.updated_at = now
                 remote_context.save()
 
             return remote_article, True
 
-    def does_exist(self, **kwargs):
+    def does_exist(self, **kwargs) -> bool:
         if "url" not in kwargs:
             raise Exception("item must have a url")
         return Article.select().where(Article.url == kwargs['url']).exists()

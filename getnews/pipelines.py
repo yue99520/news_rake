@@ -21,11 +21,15 @@ class ItemVerifyPipeline:
             assert 'language' in item, "language is required"
             assert 'images' in item, "images is required"
             assert isinstance(item["images"], list), "images must be a list"
+            if 'extra_info' in item and item['extra_info'] is not None:
+                # then it means this item will cause the extra_info to be updated
+                assert isinstance(item['extra_info'], dict), "extra_info must be a dict"
         except Exception as e:
             spider.logger.error(f"[{spider.name}] Invalid item format. [{type(e).__name__}: {e}]")
             raise DropItem("ItemVerifyPipeline")
-        
+
         return item
+
 
 class TranslatePipeline:
 
@@ -33,23 +37,27 @@ class TranslatePipeline:
         self.translator = GeminiTranslate
 
     async def process_item(self, item, spider):
+        extra_info = item['extra_info'] if 'extra_info' in item else None
         if item['language'] == 'en':
             return {
                 "en": item,
                 "zh_tw": await self._to_zh_item(item),
-                "origin_language": "en"
+                "origin_language": "en",
+                "extra_info": extra_info
             }
         elif item['language'] == 'zh_tw':
             return {
                 "en": await self._to_en_item(item),
                 "zh_tw": item,
-                "origin_language": "zh_tw"
+                "origin_language": "zh_tw",
+                "extra_info": extra_info
             }
         else:
             return {
                 "en": await self._to_en_item(item),
                 "zh_tw": await self._to_zh_item(item),
-                "origin_language": "zh_tw"
+                "origin_language": "zh_tw",
+                "extra_info": extra_info
             }
 
     async def _to_zh_item(self, item):
@@ -91,11 +99,13 @@ class StoragePipeline:
         if not hasattr(spider, 'storage_helper'):
             raise Exception("Spider must have a storage_helper")
 
-        article, created = spider.storage_helper.safe_create_article(spider.name, storage_article)
+        article, created = spider.storage_helper.safe_create_article(spider.name, storage_article, extra_info=item['extra_info'])
         if created:
-            spider.logger.info(f"Created article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
+            spider.logger.info(
+                f"Created article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
         else:
-            spider.logger.warning(f"Skipped article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
+            spider.logger.warning(
+                f"Skipped article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
         return None
 
 
