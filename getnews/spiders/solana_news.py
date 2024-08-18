@@ -5,7 +5,6 @@ from scrapy.selector import SelectorList
 from markdownify import markdownify
 
 from getnews.storage import SolanaNewsStorageHelper
-from getnews.utils.clean_utils import CleanUtils
 from getnews.utils.time_utils import TimeUtils
 
 SOLANA_FQDN = "solana.com"
@@ -54,9 +53,6 @@ class SolanaNewsSpider(scrapy.Spider):
         section_contents = section_node.getall()
         clean_sections = list()
         for content in section_contents:
-            content = CleanUtils.remove_tags(content, ['section', 'style'])
-            content = CleanUtils.convert_weird_chars(content) if content != '' else ''
-            content = CleanUtils.clean_attributes(content) if content != '' else ''
             if content != '':
                 clean_sections.append(content)
         return markdownify(''.join(clean_sections), heading_style="ATX")

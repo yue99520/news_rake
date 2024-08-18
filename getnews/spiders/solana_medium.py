@@ -7,7 +7,6 @@ from scrapy_splash import SplashRequest
 from markdownify import markdownify
 
 from getnews.storage import SolanaMediumStorageHelper
-from getnews.utils.clean_utils import CleanUtils
 from getnews.utils.time_utils import TimeUtils
 
 SOLANA_FQDN = "solanafoundation.medium.com"
@@ -55,9 +54,6 @@ class SolanaMediumSpider(scrapy.Spider):
         article_url = response.meta['url']
         title = response.xpath('//meta[@name="title"][1]/@content').get().split(' | ')[0]
         content = SolanaMediumSpider.__get_article_paragraph(response)
-        content = CleanUtils.remove_tags(content, ['style', 'script'])
-        content = CleanUtils.convert_weird_chars(content)
-        content = CleanUtils.clean_attributes(content)
         content = markdownify(content, heading_style="ATX")
 
         yield {

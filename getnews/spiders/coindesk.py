@@ -3,7 +3,6 @@ from scrapy.http import XmlResponse, HtmlResponse
 from markdownify import markdownify
 
 from getnews.storage import CoindeskStorageHelper
-from getnews.utils.clean_utils import CleanUtils
 
 
 class CoindeskSpider(scrapy.Spider):
