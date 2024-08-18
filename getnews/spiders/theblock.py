@@ -30,11 +30,16 @@ class TheBlockSpider(scrapy.Spider):
     def __init__(self, *args, **kwargs):
         super(TheBlockSpider, self).__init__(*args, **kwargs)
         self.spider_context = self.storage_helper.get_spider_context_or_none(self.name)
-        self.extra_info = self.spider_context['extra_info'] if self.spider_context else {
+        self.extra_info = self.spider_context['extra_info'] if self.spider_context else None
+        self.extra_info = self.extra_info if self._initialized_extra_info(self.extra_info) else {
             'sitemap_index': 16,
             'last_article_modified': "2024-08-15 13:55 -04:00",
         }
         self.logger.info(f"theblock extra_info: {self.extra_info}")
+
+    @staticmethod
+    def _initialized_extra_info(extra_info):
+        return extra_info is not None and len(extra_info.keys()) > 0
 
     def start_requests(self):
         headers = {
@@ -120,3 +125,9 @@ class TheBlockSpider(scrapy.Spider):
             'images': [],
             'extra_info': extra_info,
         }
+
+if __name__ == '__main__':
+    pass
+    a = {}
+    b = a['123'] if "123" in a and "bbb" in a else {"a": "456"}
+    print(len(a.keys()))
