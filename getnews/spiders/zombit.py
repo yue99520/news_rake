@@ -43,6 +43,7 @@ class ZombitSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'zh_tw',
+            'images': [],
         }
 
     @staticmethod

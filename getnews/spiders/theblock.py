@@ -90,4 +90,5 @@ class TheBlockSpider(scrapy.Spider):
             'title': article_title,
             'content': article_content,
             'language': 'en',
+            'images': [],
         }
