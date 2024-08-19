@@ -35,6 +35,7 @@ class ZombitSpider(scrapy.Spider):
         title = response.meta['title']
         paragraphs = response.xpath('//div[@class="entry-content"]').getall()
         content = self._content_cleaning_and_rebuilding(paragraphs)
+        img_urls = ZombitSpider.__get_all_img_urls(response, title)
 
         yield {
             'url': article_url,
@@ -43,7 +44,7 @@ class ZombitSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'zh_tw',
-            'images': [],
+            'images': img_urls,
         }
 
     @staticmethod
@@ -54,3 +55,15 @@ class ZombitSpider(scrapy.Spider):
             if paragraph.strip():
                 clean_paragraphs.append(paragraph)
         return '\n\n'.join(clean_paragraphs)
+
+    @staticmethod
+    def __get_all_img_urls(response, title):
+
+        img_urls = response.xpath(f'//img[@alt="{title}"]/@data-src').getall()
+
+        img_urls = [response.urljoin(url) for url in img_urls]
+
+        if not img_urls:
+            img_urls = []
+ 
+        return img_urls

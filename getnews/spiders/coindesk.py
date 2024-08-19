@@ -42,6 +42,7 @@ class CoindeskSpider(scrapy.Spider):
         title = response.xpath('//title/text()').get()
         paragraphs = response.xpath(f'//div[@data-submodule-name="composer-content"]//p').getall()
         content = CoindeskSpider.__content_cleaning_and_rebuilding(paragraphs)
+        img_urls = CoindeskSpider.__get_all_img_urls(response)
 
         yield {
             'url': article_url,
@@ -50,7 +51,7 @@ class CoindeskSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'en',
-            'images': [],
+            'images' : img_urls
         }
 
     @staticmethod
@@ -61,3 +62,14 @@ class CoindeskSpider(scrapy.Spider):
             if paragraph != '':
                 clean_paragraphs.append(paragraph)
         return ''.join(clean_paragraphs)
+
+    @staticmethod    
+    def __get_all_img_urls(response):
+        
+        image_urls = response.css('picture img::attr(src)').getall()
+
+        if not image_urls:
+            image_urls = []
+
+        return image_urls
+        

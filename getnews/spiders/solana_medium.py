@@ -55,6 +55,7 @@ class SolanaMediumSpider(scrapy.Spider):
         title = response.xpath('//meta[@name="title"][1]/@content').get().split(' | ')[0]
         content = SolanaMediumSpider.__get_article_paragraph(response)
         content = markdownify(content, heading_style="ATX")
+        img_urls = SolanaMediumSpider.__get_all_img_urls(response)
 
         yield {
             'url': article_url,
@@ -63,7 +64,7 @@ class SolanaMediumSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'en',
-            'images': [],
+            'images': img_urls,
         }
 
     @staticmethod
@@ -71,3 +72,13 @@ class SolanaMediumSpider(scrapy.Spider):
         paragraphs = response.xpath('//*[contains(@class, "pw-post-body-paragraph")]')
         paragraphs = [p.get() for p in paragraphs]
         return '<div>' + ''.join(paragraphs) + '</div>'
+
+    @staticmethod    
+    def _get_all_img_urls(response):
+
+        img_urls = response.xpath('//img/@src').getall()
+
+        if not img_urls:
+            img_urls = []
+
+        return img_urls
