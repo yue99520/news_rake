@@ -26,12 +26,14 @@ class SolanaNewsSpider(scrapy.Spider):
 
     @staticmethod
     def __parse_article(response):
-        article_url = response.meta['url']
+        article_url = f"https://{SOLANA_FQDN}/" + str(response.meta['url'])
         article_date = response.xpath('/html/head/meta[11]/@content').get()
         article_date = TimeUtils.convert_datetime_to_iso8601(article_date, "%d %B %Y")
         title = response.xpath('//*[@id="__next"]/main/div[2]/section/div/div/div[1]/h1/text()').get()
         section_node = response.xpath('//*[@id="__next"]/main/article/div/div/div/div/div/div/section/node()')
         section_node = response.xpath('//*[@id="__next"]/main/article/div/div/div/div/div[1]/div/section/node()') if section_node is None else section_node
+        img_urls = SolanaNewsSpider.__get_all_img_urls(response,str(title))
+
 
         if section_node is not None:
             content = SolanaNewsSpider.__content_cleaning_and_rebuilding(section_node)
@@ -45,7 +47,7 @@ class SolanaNewsSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'en',
-            'images': [],
+            'images': img_urls,
         }
 
     @staticmethod
@@ -67,3 +69,15 @@ class SolanaNewsSpider(scrapy.Spider):
                 yield element
             else:
                 return
+
+    @staticmethod    
+    def __get_all_img_urls(response, title):
+
+        img_urls = response.xpath(f'//img[@alt="{title}"]/@src').getall()
+
+        img_urls = [response.urljoin(url) for url in img_urls]
+
+        if not img_urls:
+            img_urls = []
+
+        return img_urls

@@ -115,6 +115,8 @@ class TheBlockSpider(scrapy.Spider):
         article_content = '<div>' + ''.join(contents) + '</div>'
 
         article_content = markdownify(article_content, heading_style="ATX")
+        img_urls = TheBlockSpider.__get_all_img_urls(response)
+        
         yield {
             'url': article_url,
             'platform': THEBLOCK_FQDN,
@@ -122,12 +124,16 @@ class TheBlockSpider(scrapy.Spider):
             'title': article_title,
             'content': article_content,
             'language': 'en',
-            'images': [],
-            'extra_info': extra_info,
+            'images': img_urls
         }
+        
+    @staticmethod
+    def __get_all_img_urls(response):
+        img_url = response.xpath('//div[contains(@class, "articleFeatureImage type:primaryImage")]/img/@src').get()
 
-if __name__ == '__main__':
-    pass
-    a = {}
-    b = a['123'] if "123" in a and "bbb" in a else {"a": "456"}
-    print(len(a.keys()))
+        if img_url:
+            img_url = response.urljoin(img_url)
+        else:
+            img_url = []
+
+        return img_url
