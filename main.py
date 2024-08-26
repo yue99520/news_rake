@@ -30,7 +30,7 @@ def run_spider():
     # process.crawl(sp.JinseSpider, cms_client)
     # weird not work in here
     # process.crawl(sp.SolanaMediumSpider, cms_client)
-    process.crawl(sp.SolanaNewsSpider, cms_client)
+    # process.crawl(sp.SolanaNewsSpider, cms_client)
     # no content
     # process.crawl(sp.TheBlockSpider, cms_client)
     # no content
