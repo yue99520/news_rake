@@ -1,6 +1,6 @@
 import json
 import unittest
-
+import dotenv
 from getnews.spiders import SolanaNewsSpider
 from getnews.storage.postgres import *
 

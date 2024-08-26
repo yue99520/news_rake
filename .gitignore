@@ -185,3 +185,5 @@ pyrightconfig.json
 /debug.py
 /output/
 /.idea/poetry.xml
+
+.DS_Store

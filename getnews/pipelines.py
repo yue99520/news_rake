@@ -1,11 +1,11 @@
 import asyncio
 import os
-import sys
+from dotenv import load_dotenv
 from datetime import datetime
 from scrapy.exceptions import DropItem
 from .utils import GeminiTranslate
-
-
+from .storage import CMSClient
+load_dotenv()
 class ItemVerifyPipeline:
     def process_item(self, item, spider):
         try:
@@ -78,35 +78,43 @@ class TranslatePipeline:
 
 
 class StoragePipeline:
+    def __init__(self):
+        self.cms_client = CMSClient(
+            graphql_endpoint="https://cms.gen3.network/api/graphql",
+            identity=os.getenv('CMS_IDENTITY'),
+            secret=os.getenv('CMS_SECRET')
+        )
     def process_item(self, item, spider):
         origin_language = item['origin_language']
         platform_name = item[origin_language]['platform']
         url = item[origin_language]['url']
 
         storage_article = {
-            "platform_name": platform_name,
-            "spider_name": spider.name,
-            "url": item[origin_language]['url'],
+            "platformName": platform_name,
+            # "spider_name": spider.name,
+            "URL": item[origin_language]['url'],
             "date": item[origin_language]['date'],
-            "news_pic": item[origin_language]["images"],
-            "origin_language": item['origin_language'],
-            "news_topic_cn": item['zh_tw']['title'],
-            "news_topic_eng": item['en']['title'],
-            "content_cn": item['zh_tw']['content'],
-            "content_eng": item['en']['content'],
+            # "news_pic": item[origin_language]["images"],
+            "language": item['origin_language'],
+            "newsTopicCN": item['zh_tw']['title'],
+            "newsTopicEN": item['en']['title'],
+            "contentCN": item['zh_tw']['content'],
+            "contentEN": item['en']['content'],
         }
 
-        if not hasattr(spider, 'storage_helper'):
-            raise Exception("Spider must have a storage_helper")
+        self.cms_client.create_crawler(storage_article)
 
-        article, created = spider.storage_helper.safe_create_article(spider.name, storage_article, extra_info=item['extra_info'])
-        if created:
-            spider.logger.info(
-                f"Created article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
-        else:
-            spider.logger.warning(
-                f"Skipped article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
-        return None
+        # if not hasattr(spider, 'storage_helper'):
+        #     raise Exception("Spider must have a storage_helper")
+
+        # article, created = spider.storage_helper.safe_create_article(spider.name, storage_article, extra_info=item['extra_info'])
+        # if created:
+        #     spider.logger.info(
+        #         f"Created article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
+        # else:
+        #     spider.logger.warning(
+        #         f"Skipped article: url={url}, title=[zh_tw={article.news_topic_cn}, en={article.news_topic_eng}]")
+        # return None
 
 
 class DebugOutputPipeline:

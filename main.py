@@ -5,6 +5,9 @@ from playhouse.postgres_ext import PostgresqlExtDatabase
 import getnews.spiders as sp
 import getnews.storage as storage
 
+import asyncio
+from dotenv import load_dotenv
+load_dotenv()
 
 def run_spider():
     settings = get_project_settings()
@@ -28,19 +31,4 @@ def run_spider():
 
 
 if __name__ == '__main__':
-    db = None
-    try:
-        db = storage.DBControl(PostgresqlExtDatabase(
-            'gen3_crawler',
-            user='user',
-            password='password',
-            host='localhost',
-            port=5432
-        ))
-        db.connect()
-        db.create_tables()
-        run_spider()
-
-    finally:
-        if db is not None:
-            db.close()
+    run_spider()

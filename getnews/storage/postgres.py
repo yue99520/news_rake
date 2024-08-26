@@ -1,64 +1,64 @@
-from datetime import datetime
+# from datetime import datetime
 
-from playhouse.postgres_ext import *
-
-
-db_proxy = Proxy()
+# from playhouse.postgres_ext import *
 
 
-class Article(Model):
-    id = AutoField()
-    platform_name = CharField()
-    spider_name = CharField()
-    url = CharField(unique=True)
-    date = DateField()
-    news_pic = BinaryJSONField()
-    origin_language = CharField()
-    news_topic_eng = CharField()
-    news_topic_cn = CharField()
-    content_cn = TextField()
-    content_eng = TextField()
-
-    class Meta:
-        database = db_proxy
-        table_name = 'articles'
-
-    @classmethod
-    def get_db(cls):
-        return cls._meta.database
+# db_proxy = Proxy()
 
 
-class SpiderContext(Model):
-    id = AutoField()
-    spider_name = CharField(unique=True)
-    latest_article_id = ForeignKeyField(Article, field='id', null=True)
-    extra_info = BinaryJSONField()
-    updated_at = DateTimeField(default=datetime.now())
+# class Article(Model):
+#     id = AutoField()
+#     platform_name = CharField()
+#     spider_name = CharField()
+#     url = CharField(unique=True)
+#     date = DateField()
+#     news_pic = BinaryJSONField()
+#     origin_language = CharField()
+#     news_topic_eng = CharField()
+#     news_topic_cn = CharField()
+#     content_cn = TextField()
+#     content_eng = TextField()
 
-    class Meta:
-        database = db_proxy
-        table_name = 'spider_context'
+#     class Meta:
+#         database = db_proxy
+#         table_name = 'articles'
 
-    @classmethod
-    def get_db(cls):
-        return cls._meta.database
+#     @classmethod
+#     def get_db(cls):
+#         return cls._meta.database
 
 
-class DBControl:
-    TABLES = [Article, SpiderContext]
+# class SpiderContext(Model):
+#     id = AutoField()
+#     spider_name = CharField(unique=True)
+#     latest_article_id = ForeignKeyField(Article, field='id', null=True)
+#     extra_info = BinaryJSONField()
+#     updated_at = DateTimeField(default=datetime.now())
 
-    def __init__(self, db):
-        self.db = db
-        db_proxy.initialize(db)
+#     class Meta:
+#         database = db_proxy
+#         table_name = 'spider_context'
 
-    def create_tables(self):
-        self.db.create_tables(self.TABLES)
+#     @classmethod
+#     def get_db(cls):
+#         return cls._meta.database
 
-    def drop_tables(self):
-        self.db.drop_tables(self.TABLES)
 
-    def connect(self):
-        self.db.connect()
+# class DBControl:
+#     TABLES = [Article, SpiderContext]
 
-    def close(self):
-        self.db.close()
+#     def __init__(self, db):
+#         self.db = db
+#         db_proxy.initialize(db)
+
+#     def create_tables(self):
+#         self.db.create_tables(self.TABLES)
+
+#     def drop_tables(self):
+#         self.db.drop_tables(self.TABLES)
+
+#     def connect(self):
+#         self.db.connect()
+
+#     def close(self):
+#         self.db.close()
