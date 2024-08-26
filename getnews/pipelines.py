@@ -81,8 +81,8 @@ class StoragePipeline:
     def __init__(self):
         self.cms_client = CMSClient(
             graphql_endpoint="https://cms.gen3.network/api/graphql",
-            identity=os.getenv('CMS_IDENTITY'),
-            secret=os.getenv('CMS_SECRET')
+            identity=os.getenv("CMS_IDENTITY"),
+            secret=os.getenv("CMS_PASSWORD")
         )
     def process_item(self, item, spider):
         origin_language = item['origin_language']
@@ -101,9 +101,11 @@ class StoragePipeline:
             "contentCN": item['zh_tw']['content'],
             "contentEN": item['en']['content'],
         }
-
-        self.cms_client.create_crawler(storage_article)
-
+        if self.cms_client.login():
+            print("Login successful!")
+            self.cms_client.create_crawler(storage_article)
+        else:
+            print("Login failed!")
         # if not hasattr(spider, 'storage_helper'):
         #     raise Exception("Spider must have a storage_helper")
 

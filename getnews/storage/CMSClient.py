@@ -1,3 +1,4 @@
+import os
 import requests
 from datetime import datetime
 
@@ -84,8 +85,8 @@ class CMSClient:
 if __name__ == "__main__":
     cms_client = CMSClient(
         graphql_endpoint="https://cms.gen3.network/api/graphql",
-        identity="user@example.com",
-        secret="gen3dashboard"
+        identity=os.getenv("CMS_IDENTITY"),
+        secret=os.getenv("CMS_PASSWORD")
     )
 
     if cms_client.login():
