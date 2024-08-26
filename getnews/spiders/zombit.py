@@ -2,16 +2,20 @@ from typing import Iterable
 import scrapy
 from markdownify import markdownify
 
+from getnews.storage import ZombitStorageHelper
+
+
 class ZombitSpider(scrapy.Spider):
     name = "zombit"
     allowed_domains = ["zombit.info"]
     start_urls = ["https://zombit.info/"]
+    storage_helper = ZombitStorageHelper()
 
     def start_requests(self):
         for url in self.start_urls:
             yield scrapy.Request(url, callback=self.parse)
 
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         articles = response.xpath('//div[@class="post-item row mb-4"]')
 
         for article in articles:
@@ -21,7 +25,8 @@ class ZombitSpider(scrapy.Spider):
             if link_url:
                 link_url = response.urljoin(link_url)
                 print('link_url',link_url)
-
+            if self.storage_helper.does_exist(url=link_url):
+                continue
             yield scrapy.Request(link_url, callback=self.parse_news, meta={'lastmod': date, 'title': title})
 
     def parse_news(self, response):
@@ -30,6 +35,7 @@ class ZombitSpider(scrapy.Spider):
         title = response.meta['title']
         paragraphs = response.xpath('//div[@class="entry-content"]').getall()
         content = self._content_cleaning_and_rebuilding(paragraphs)
+        img_urls = ZombitSpider.__get_all_img_urls(response, title)
 
         yield {
             'url': article_url,
@@ -38,6 +44,7 @@ class ZombitSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'zh_tw',
+            'images': img_urls,
         }
 
     @staticmethod
@@ -48,3 +55,15 @@ class ZombitSpider(scrapy.Spider):
             if paragraph.strip():
                 clean_paragraphs.append(paragraph)
         return '\n\n'.join(clean_paragraphs)
+
+    @staticmethod
+    def __get_all_img_urls(response, title):
+
+        img_urls = response.xpath(f'//img[@alt="{title}"]/@data-src').getall()
+
+        img_urls = [response.urljoin(url) for url in img_urls]
+
+        if not img_urls:
+            img_urls = []
+ 
+        return img_urls

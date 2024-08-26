@@ -1,24 +1,8 @@
 version: '3'
 services:
-  rabbitmq:
-    image: rabbitmq:latest
-    container_name: rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: user
-      RABBITMQ_DEFAULT_PASS: password
   crawler:
     build: .
     container_name: crawler
-    depends_on:
-      - rabbitmq
-    environment:
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_USER: user
-      RABBITMQ_PASS: password
   splash:
     image: scrapinghub/splash
     ports:
@@ -27,3 +11,12 @@ services:
       - SPLASH_MAX_TIMEOUT=3600  # Set the maximum timeout for requests
       - ENABLE_ADBLOCK=1         # Enable adblock to reduce ads in rendered pages
     restart: unless-stopped
+  postgres:
+    container_name: gen3-crawler-postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: gen3_crawler
+    ports:
+      - "5432:5432"

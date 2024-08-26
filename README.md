@@ -1,4 +1,4 @@
 ```
 docker-compose up -d --build
-poetry run python ./mq_translate/main.py
+poetry run python main.py
 ```

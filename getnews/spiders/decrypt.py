@@ -2,25 +2,31 @@ import scrapy
 import feedparser
 import re
 from markdownify import markdownify
+
+from getnews.storage import DecryptStorageHelper
+
 SOLANA_FQDN = "decrypt.co"
+
+
 class DecryptSpider(scrapy.Spider):
     name = "decrypt"
     allowed_domains = ["decrypt.co"]
     start_urls = f"https://{SOLANA_FQDN}/feed"
+    storage_helper = DecryptStorageHelper()
 
     def start_requests(self):
             yield scrapy.Request(self.start_urls, callback=self.parse)
             
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         rss = feedparser.parse(response.body)
-        # print(rss)
+
         for entry in rss.entries:
 
             title = entry.get('title')
             date = entry.get('published')
             url = entry.get('link')
             print('url',url)
-            if url and self.is_valid_url(url):
+            if url and self.is_valid_url(url) and not self.storage_helper.does_exist(url=url):
                 print('valid',url)
                 url = response.urljoin(url)
                 yield scrapy.Request(url, callback=self.parse_news, meta={'lastmod': date, 'title': title})
@@ -37,6 +43,7 @@ class DecryptSpider(scrapy.Spider):
         title = response.meta['title']
         paragraphs = response.xpath('//*[@id="__next"]/div/div[1]/div/main/div[2]/div/div/div[2]/div/div/div/div[1]/div/div').getall()
         content = self.__content_cleaning_and_rebuilding(paragraphs)
+        image_urls = DecryptSpider.__get_all_img_urls(response)
 
         yield {
             'url': article_url,
@@ -45,6 +52,7 @@ class DecryptSpider(scrapy.Spider):
             'title': title,
             'content': content,
             'language': 'en',
+            'images': image_urls
         }
 
     @staticmethod
@@ -55,3 +63,27 @@ class DecryptSpider(scrapy.Spider):
             if paragraph.strip():
                 clean_paragraphs.append(paragraph)
         return '\n\n'.join(clean_paragraphs)
+    
+    @staticmethod
+    def __get_all_img_urls(response):
+        img_urls = []
+        xpath_path = '/html/body/div[1]/div/div[1]/div/main/div[2]/div/div/div[2]'
+        
+        img_elements = response.xpath(f'{xpath_path}//img')
+        for img in img_elements:
+
+            img_url = img.xpath('@src').get()
+
+            if not img_url:
+                img_url = img.xpath('@srcset').get()
+
+            if img_url:
+                img_url = response.urljoin(img_url)
+                img_urls.append(img_url)
+
+        if not img_urls:
+            img_urls = []
+
+        return img_urls
+    
+
