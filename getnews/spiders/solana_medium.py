@@ -16,7 +16,10 @@ class SolanaMediumSpider(scrapy.Spider):
     name = "solana_medium"
     allowed_domains = ["medium.com", "localhost","splash-agent.local", "splash-agent.2local"]
     start_urls = ["https://solanafoundation.medium.com"]
-    storage_helper = SolanaMediumStorageHelper()
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(SolanaMediumSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = SolanaMediumStorageHelper(cms_client)
 
     def start_requests(self):
         for url in self.start_urls:

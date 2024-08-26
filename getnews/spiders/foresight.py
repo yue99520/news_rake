@@ -13,7 +13,10 @@ class ForesightSpider(scrapy.Spider):
     name = "foresight"
     allowed_domains = ["foresightnews.pro","localhost"]
     start_urls = ["https://foresightnews.pro/news"]
-    storage_helper = ForesightStorageHelper()
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(ForesightSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = ForesightStorageHelper(cms_client)
 
     def start_requests(self):
         for url in self.start_urls:
