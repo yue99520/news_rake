@@ -90,11 +90,11 @@ class StoragePipeline:
 
         storage_article = {
             "platformName": platform_name,
-            # "spider_name": spider.name,
+            # "spiderName": spider.name,
             "URL": item[origin_language]['url'],
             "date": item[origin_language]['date'],
-            # "news_pic": item[origin_language]["images"],
-            "language": item['origin_language'],
+            "newsPic": item[origin_language]["images"] if len(item[origin_language]["images"]) > 0 else "",
+            "language": "zh" if origin_language == "zh_tw" else "en",
             "newsTopicCN": item['zh_tw']['title'],
             "newsTopicEN": item['en']['title'],
             "contentCN": item['zh_tw']['content'],
@@ -105,6 +105,9 @@ class StoragePipeline:
             raise Exception("Spider must have a storage_helper")
 
         article, created = spider.storage_helper.safe_create_article(spider.name, storage_article, extra_info=item['extra_info'])
+        if article is None:
+            spider.logger.error(f"Failed to create article: url={url}, title=[zh_tw={storage_article['newsTopicCN']}, en={storage_article['newsTopicEN']}]")
+            return None
         if created:
             spider.logger.info(
                 f"Created article: url={url}, title=[zh_tw={article['newsTopicCN']}, en={article['newsTopicEN']}]")

@@ -16,7 +16,7 @@ class ForesightSpider(scrapy.Spider):
 
     def __init__(self, cms_client, *args, **kwargs):
         super(ForesightSpider, self).__init__(*args, **kwargs)
-        self.storage_helper = ForesightStorageHelper(cms_client)
+        self.storage_helper = ForesightStorageHelper(cms_client, self.name)
 
     def start_requests(self):
         for url in self.start_urls:

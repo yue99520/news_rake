@@ -15,7 +15,7 @@ class DecryptSpider(scrapy.Spider):
 
     def __init__(self, cms_client, *args, **kwargs):
         super(DecryptSpider, self).__init__(*args, **kwargs)
-        self.storage_helper = DecryptStorageHelper(cms_client)
+        self.storage_helper = DecryptStorageHelper(cms_client, self.name)
 
     def start_requests(self):
             yield scrapy.Request(self.start_urls, callback=self.parse)

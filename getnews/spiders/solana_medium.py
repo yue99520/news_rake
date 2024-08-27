@@ -19,7 +19,7 @@ class SolanaMediumSpider(scrapy.Spider):
 
     def __init__(self, cms_client, *args, **kwargs):
         super(SolanaMediumSpider, self).__init__(*args, **kwargs)
-        self.storage_helper = SolanaMediumStorageHelper(cms_client)
+        self.storage_helper = SolanaMediumStorageHelper(cms_client, self.name)
 
     def start_requests(self):
         for url in self.start_urls:

@@ -17,7 +17,7 @@ class CoindeskSpider(scrapy.Spider):
 
     def __init__(self, cms_client, *args, **kwargs):
         super(CoindeskSpider, self).__init__(*args, **kwargs)
-        self.storage_helper = CoindeskStorageHelper(cms_client)
+        self.storage_helper = CoindeskStorageHelper(cms_client, self.name)
 
     def parse(self, response, **kwargs):
         if not isinstance(response, XmlResponse):

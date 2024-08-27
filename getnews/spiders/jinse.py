@@ -11,7 +11,7 @@ class JinseSpider(scrapy.Spider):
         super(JinseSpider, self).__init__(*args, **kwargs)
         self.limit = limit
         self.start_urls = [f"https://api.jinse.com/v4/live/list?limit={self.limit}&reading=false&flag=up"]
-        self.storage_helper = JinseStorageHelper(cms_client)
+        self.storage_helper = JinseStorageHelper(cms_client, self.name)
 
     def parse(self, response, **kwargs):
         

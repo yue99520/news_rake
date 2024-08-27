@@ -17,7 +17,7 @@ class SolanaNewsSpider(scrapy.Spider):
 
     def __init__(self, cms_client, *args, **kwargs):
         super(SolanaNewsSpider, self).__init__(*args, **kwargs)
-        self.storage_helper = SolanaNewsStorageHelper(cms_client)
+        self.storage_helper = SolanaNewsStorageHelper(cms_client, self.name)
 
     def parse(self, response, **kwargs):
         for element in self.__get_news_link_elements(response):

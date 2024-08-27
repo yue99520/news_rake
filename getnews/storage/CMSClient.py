@@ -1,3 +1,5 @@
+import json
+
 import os
 import requests
 
@@ -48,13 +50,12 @@ class CMSClient:
         return True
 
     def get_crawler_or_none(self, url):
-        # TODO: change back to unique where statement
         get_crawler_query = """
         query GetCrawler($url: String!) {
-            crawler(
+            crawler: crawler(
                 where: { URL: $url }
             ) {
-                CID
+                id
                 URL
                 date
                 platformName
@@ -63,26 +64,14 @@ class CMSClient:
                 contentCN
                 contentEN
                 newsPic
+                spider {
+                    spiderName
+                    extraInfo
+                    updatedAt
+                }
             }
         }
         """
-        # get_crawler_query = """
-        # query GetCrawler($url: StringFilter!) {
-        #     crawlers(
-        #         where: { URL: $url }
-        #     ) {
-        #         id: CID
-        #         url
-        #         date
-        #         platform_Name
-        #         newsTopicCN
-        #         newsTopicEN
-        #         contentCN
-        #         contentEN
-        #         newsPic
-        #     }
-        # }
-        # """
         response_data = requests.post(
             self.graphql_endpoint,
             json={
@@ -92,55 +81,77 @@ class CMSClient:
                 }
             }
         ).json()
-
-        print(response_data)
         if "errors" not in response_data:
             return response_data["data"]["crawler"]
         return None
 
-    def create_crawler(self, data):
+    def create_crawler(self, crawler, spider):
         create_crawler_mutation = """
-        mutation ($data: CrawlerCreateInput!) {
-            crawler: createCrawler(data: $data) {
+        mutation ($crawler: CrawlerCreateInput!, $spider: SpiderUpdateInput!, $spiderName: String!) {
+            crawler: createCrawler(data: $crawler) {
                 CID
                 URL
                 date
+                language
                 platformName
                 newsTopicCN
                 newsTopicEN
                 contentCN
                 contentEN
                 newsPic
+                spider {
+                    spiderName
+                    extraInfo
+                    updatedAt
+                }
+            }
+            spider: updateSpider(
+                where: { spiderName: $spiderName }
+                data: $spider
+            ) {
+                spiderName
+                extraInfo
+                updatedAt
             }
         }
         """
         response_data = self.session.post(
             self.graphql_endpoint,
-            json={"query": create_crawler_mutation, "variables": {"data": data}}
+            json={
+                "query": create_crawler_mutation,
+                "variables": {
+                    "crawler": crawler,
+                    "spider": spider,
+                    "spiderName": spider["spiderName"]
+                }
+            }
+        ).json()
+        if "errors" not in response_data:
+            return response_data["data"]["crawler"]
+        raise Exception(response_data['errors'][0]['message'])
+
+    def delete_crawler(self, url):
+        delete_crawler_mutation = """
+        mutation DeleteCrawler($url: String!) {
+          crawler: deleteCrawler(where: { URL: $url }) {
+            CID
+          }
+        }
+        """
+        response_data = self.session.post(
+            self.graphql_endpoint,
+            json={
+                "query": delete_crawler_mutation,
+                "variables": {
+                    "url": url
+                }
+            }
         ).json()
         if "errors" not in response_data:
             return response_data["data"]["crawler"]
         return None
 
-    def delete_crawler(self, cid):
-        delete_crawler_mutation = """
-        mutation DeleteCrawler($cid: Int!) {
-          deleteCrawler(where: { CID: $cid }) {
-            CID
-          }
-        }
-        """
-        self.session.post(
-            self.graphql_endpoint,
-            json={
-                "query": delete_crawler_mutation,
-                "variables": {
-                    "cid": cid
-                }
-            }
-        )
-
-    def get_spider_context_or_none(self, spider_name):
+    def get_spider_or_none(self, spider_name):
         get_spider_context_query = """
         query GetSpiderContext($spiderName: String!) {
             spider: spider(
@@ -168,18 +179,17 @@ class CMSClient:
             return response_data["data"]["spider"]
         return None
 
-    def create_spider_context(self, data):
+    def create_spider(self, data):
         create_spider_context_mutation = """
-            mutation CreateSpiderContext($data: CreateSpiderContextInput!) {
-                createSpider(data: $data) {
+            mutation ($data: SpiderCreateInput!) {
+                spider: createSpider(data: $data) {
                     spiderName
-                    latestArticleId
                     extraInfo
                     updatedAt
                 }
             }
         """
-        requests.post(
+        response_data = self.session.post(
             self.graphql_endpoint,
             json={
                 "query": create_spider_context_mutation,
@@ -187,32 +197,10 @@ class CMSClient:
                     "data": data
                 }
             }
-        )
-
-    def update_spider_context(self, spider_name, data):
-        update_spider_context_mutation = """
-            mutation UpdateSpiderContext($spiderName: String!, $data: UpdateSpiderContextInput!) {
-                updateSpider(
-                    where: { spiderName: $spiderName }
-                    data: $data
-                ) {
-                    spiderName
-                    latestArticleId
-                    extraInfo
-                    updatedAt
-                }
-            }
-        """
-        requests.post(
-            self.graphql_endpoint,
-            json={
-                "query": update_spider_context_mutation,
-                "variables": {
-                    "spiderName": spider_name,
-                    "data": data
-                }
-            }
-        )
+        ).json()
+        if "errors" not in response_data:
+            return response_data["data"]["spider"]
+        raise Exception(response_data['errors'][0]['message'])
 
 
 if __name__ == '__main__':
@@ -222,5 +210,5 @@ if __name__ == '__main__':
         secret=os.getenv("CMS_PASSWORD")
     )
     if cms_client.login():
-        crawler_data = cms_client.get_spider_context_or_none("solana_news")
+        crawler_data = cms_client.get_spider_or_none("solana_news")
         print(crawler_data)

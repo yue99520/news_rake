@@ -17,7 +17,7 @@ class TheBlockSpider(scrapy.Spider):
 
     def __init__(self, cms_client, *args, **kwargs):
         super(TheBlockSpider, self).__init__(*args, **kwargs)
-        self.storage_helper = TheBlockStorageHelper(cms_client)
+        self.storage_helper = TheBlockStorageHelper(cms_client, self.name)
 
     custom_settings = {
         'COOKIES_ENABLED': True,
