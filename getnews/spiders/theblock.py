@@ -14,7 +14,10 @@ THEBLOCK_FQDN = "www.theblock.co"
 class TheBlockSpider(scrapy.Spider):
     name = "theblock"
     allowed_domains = ["www.theblock.co", "localhost", "splash-agent.local", "splash-agent.2local"]
-    storage_helper = TheBlockStorageHelper()
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(TheBlockSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = TheBlockStorageHelper(cms_client, self.name)
 
     custom_settings = {
         'COOKIES_ENABLED': True,

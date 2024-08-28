@@ -7,12 +7,13 @@ class JinseSpider(scrapy.Spider):
     name = "jinse"
     allowed_domains = ["api.jinse.com"]
     
-    def __init__(self, limit=20, *args, **kwargs):
+    def __init__(self, cms_client, limit=20, *args, **kwargs):
         super(JinseSpider, self).__init__(*args, **kwargs)
         self.limit = limit
         self.start_urls = [f"https://api.jinse.com/v4/live/list?limit={self.limit}&reading=false&flag=up"]
-        self.storage_helper = JinseStorageHelper()
-    def parse(self, response):
+        self.storage_helper = JinseStorageHelper(cms_client, self.name)
+
+    def parse(self, response, **kwargs):
         
         data = json.loads(response.text)
         news_list = data.get('list', [])

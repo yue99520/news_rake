@@ -9,12 +9,14 @@ class FollowinSpider(scrapy.Spider):
     name = "followin"
     allowed_domains = ["followin.io"]
     start_urls = ["https://followin.io/unknow/sitemap/news.xml"]
-    storage_helper = FollowinStorageHelper()
-    # languages = ["zh-Hant", "en"]
     custom_settings = {
         'DELAY_REQUEST': 0.5,
         'CONCURRENT_REQUESTS': 2,
     }
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(FollowinSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = FollowinStorageHelper(cms_client, self.name)
 
     def parse(self, response, **kwargs):
         if not isinstance(response, XmlResponse):

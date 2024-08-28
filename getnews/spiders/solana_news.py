@@ -14,7 +14,10 @@ class SolanaNewsSpider(scrapy.Spider):
     name = "solana_news"
     allowed_domains = [SOLANA_FQDN]
     start_urls = [f"https://{SOLANA_FQDN}/news"]
-    storage_helper = SolanaNewsStorageHelper()
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(SolanaNewsSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = SolanaNewsStorageHelper(cms_client, self.name)
 
     def parse(self, response, **kwargs):
         for element in self.__get_news_link_elements(response):

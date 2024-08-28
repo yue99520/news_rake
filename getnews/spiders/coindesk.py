@@ -9,12 +9,15 @@ class CoindeskSpider(scrapy.Spider):
     name = "coindesk"
     allowed_domains = ["www.coindesk.com"]
     start_urls = ["https://www.coindesk.com/arc/outboundfeeds/news-sitemap-index-es/"]
-    storage_helper = CoindeskStorageHelper()
 
     custom_settings = {
         'DELAY_REQUEST': 0.3,
         'CONCURRENT_REQUESTS': 2,
     }
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(CoindeskSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = CoindeskStorageHelper(cms_client, self.name)
 
     def parse(self, response, **kwargs):
         if not isinstance(response, XmlResponse):

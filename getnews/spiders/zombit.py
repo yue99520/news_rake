@@ -9,7 +9,10 @@ class ZombitSpider(scrapy.Spider):
     name = "zombit"
     allowed_domains = ["zombit.info"]
     start_urls = ["https://zombit.info/"]
-    storage_helper = ZombitStorageHelper()
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(ZombitSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = ZombitStorageHelper(cms_client, self.name)
 
     def start_requests(self):
         for url in self.start_urls:

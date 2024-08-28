@@ -12,7 +12,10 @@ class DecryptSpider(scrapy.Spider):
     name = "decrypt"
     allowed_domains = ["decrypt.co"]
     start_urls = f"https://{SOLANA_FQDN}/feed"
-    storage_helper = DecryptStorageHelper()
+
+    def __init__(self, cms_client, *args, **kwargs):
+        super(DecryptSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = DecryptStorageHelper(cms_client, self.name)
 
     def start_requests(self):
             yield scrapy.Request(self.start_urls, callback=self.parse)
