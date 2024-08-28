@@ -53,7 +53,7 @@ class URLBasedIdentifierHelper(BaseStorageHelper):
                     "spiderName": spider_name,
                 }
             }
-            spider = {"spiderName": "test_spider2"}
+            spider = {"spiderName": spider_name}
 
             extra_info = kwargs.get('extra_info')
             if extra_info is not None:

@@ -1,23 +1,19 @@
-import random
 from datetime import datetime
-from typing import List, Dict
+from typing import List
 
 import scrapy
-from scrapy_splash import request
 from markdownify import markdownify
+from scrapy_splash import request
 
 from getnews.storage import TheBlockStorageHelper
+from getnews.utils import TimeUtils
 
 THEBLOCK_FQDN = "www.theblock.co"
 
 
 class TheBlockSpider(scrapy.Spider):
     name = "theblock"
-    allowed_domains = ["www.theblock.co", "localhost", "splash-agent.local", "splash-agent.2local"]
-
-    def __init__(self, cms_client, *args, **kwargs):
-        super(TheBlockSpider, self).__init__(*args, **kwargs)
-        self.storage_helper = TheBlockStorageHelper(cms_client, self.name)
+    allowed_domains = ["www.theblock.co", "localhost", "splash-agent.local", "splash-agent.2local", "splash-agent.henry"]
 
     custom_settings = {
         'COOKIES_ENABLED': True,
@@ -30,19 +26,24 @@ class TheBlockSpider(scrapy.Spider):
         'USER_AGENT': 'Mozilla/5.0 (Linux; Android 13; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, cms_client, *args, **kwargs):
         super(TheBlockSpider, self).__init__(*args, **kwargs)
+        self.storage_helper = TheBlockStorageHelper(cms_client, self.name)
         self.spider_context = self.storage_helper.get_spider_context_or_none(self.name)
-        self.extra_info = self.spider_context['extra_info'] if self.spider_context else None
-        self.extra_info = self.extra_info if self._initialized_extra_info(self.extra_info) else {
-            'sitemap_index': 16,
-            'last_article_modified': "2024-08-15 13:55 -04:00",
-        }
+        if self.spider_context is None:
+            raise Exception("Illegal state: theblock spider context is not found")
+        self.extra_info = self.spider_context['extra_info'] if "extra_info" in self.spider_context else None
+        self.extra_info = self._initialized_extra_info(self.extra_info)
         self.logger.info(f"theblock extra_info: {self.extra_info}")
 
     @staticmethod
     def _initialized_extra_info(extra_info):
-        return extra_info is not None and len(extra_info.keys()) > 0
+        if extra_info is not None and len(extra_info.keys()) > 0:
+            return extra_info
+        return {
+            'sitemap_index': 16,
+            'last_article_modified': "2024-08-15 13:55 -04:00",
+        }
 
     def start_requests(self):
         headers = {
@@ -82,9 +83,10 @@ class TheBlockSpider(scrapy.Spider):
             if article_url is not None and article_date is not None:
                 if not self._article_exists(article_url, article_date, extra_info):
                     extra_info['last_article_modified'] = article_date
+                    article_iso_date = TimeUtils.convert_datetime_to_iso8601(article_date, "%Y-%m-%d %H:%M %z")
                     yield {
                         "article_url": article_url,
-                        "article_date": article_date,
+                        "article_date": article_iso_date,
                         "extra_info": extra_info,
                     }
                 else:
@@ -122,12 +124,13 @@ class TheBlockSpider(scrapy.Spider):
         
         yield {
             'url': article_url,
-            'platform': THEBLOCK_FQDN,
+            'platform': TheBlockSpider.name,
             'date': article_date,
             'title': article_title,
             'content': article_content,
             'language': 'en',
-            'images': img_urls
+            'images': img_urls,
+            'extra_info': extra_info,
         }
         
     @staticmethod
@@ -135,7 +138,7 @@ class TheBlockSpider(scrapy.Spider):
         img_url = response.xpath('//div[contains(@class, "articleFeatureImage type:primaryImage")]/img/@src').get()
 
         if img_url:
-            img_url = response.urljoin(img_url)
+            img_url = [response.urljoin(img_url)]
         else:
             img_url = []
 
