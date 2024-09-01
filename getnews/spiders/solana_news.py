@@ -25,18 +25,16 @@ class SolanaNewsSpider(scrapy.Spider):
             article_url = f"https://{SOLANA_FQDN}{article_path}"
             if self.storage_helper.does_exist(url=article_url):
                 continue
-            yield scrapy.Request(article_url, callback=self.__parse_article, meta={'url': article_path})
+            yield scrapy.Request(article_url, callback=self._parse_article, meta={'url': article_path})
 
-    @staticmethod
-    def __parse_article(response):
-        article_url = f"https://{SOLANA_FQDN}/" + str(response.meta['url'])
+    def _parse_article(self, response):
+        article_url = f"https://{SOLANA_FQDN}" + str(response.meta['url'])
         article_date = response.xpath('/html/head/meta[11]/@content').get()
         article_date = TimeUtils.convert_datetime_to_iso8601(article_date, "%d %B %Y")
         title = response.xpath('//*[@id="__next"]/main/div[2]/section/div/div/div[1]/h1/text()').get()
         section_node = response.xpath('//*[@id="__next"]/main/article/div/div/div/div/div/div/section/node()')
         section_node = response.xpath('//*[@id="__next"]/main/article/div/div/div/div/div[1]/div/section/node()') if section_node is None else section_node
         img_urls = SolanaNewsSpider.__get_all_img_urls(response,str(title))
-
 
         if section_node is not None:
             content = SolanaNewsSpider.__content_cleaning_and_rebuilding(section_node)
@@ -45,7 +43,7 @@ class SolanaNewsSpider(scrapy.Spider):
 
         yield {
             'url': article_url,
-            'platform': SOLANA_FQDN,
+            'platform': self.name,
             'date': article_date,
             'title': title,
             'content': content,
