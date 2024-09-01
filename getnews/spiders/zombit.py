@@ -3,6 +3,7 @@ import scrapy
 from markdownify import markdownify
 
 from getnews.storage import ZombitStorageHelper
+from getnews.utils import TimeUtils
 
 
 
@@ -32,11 +33,12 @@ class ZombitSpider(scrapy.Spider):
                 print('link_url',link_url)
             if self.storage_helper.does_exist(url=link_url):
                 continue
-            yield scrapy.Request(link_url, callback=self.parse_news, meta={'lastmod': date, 'title': title})
+            yield scrapy.Request(link_url, callback=self.parse_news, meta={'title': title})
 
     def parse_news(self, response):
         article_url = response.url
-        article_date = response.meta['lastmod']
+        origin_article_date = response.xpath('//div[@class="single-date"]/text()').get()
+        iso_article_date = TimeUtils.convert_datetime_to_iso8601(origin_article_date, "%Y/%m/%d %H:%M")
         title = response.meta['title']
         paragraphs = response.xpath('//div[@class="entry-content"]').getall()
         content = self._content_cleaning_and_rebuilding(paragraphs)
@@ -45,7 +47,7 @@ class ZombitSpider(scrapy.Spider):
         yield {
             'url': article_url,
             'platform': self.name,
-            'date': article_date,
+            'date': iso_article_date,
             'title': title,
             'content': content,
             'language': 'zh_tw',

@@ -27,14 +27,14 @@ def run_spider():
     # process.crawl(sp.FollowinSpider, cms_client)
     # process.crawl(sp.ForesightSpider, cms_client)
     # only get one article?
-    process.crawl(sp.JinseSpider, cms_client)
+    # process.crawl(sp.JinseSpider, cms_client)
     # weird not work in here
     # process.crawl(sp.SolanaMediumSpider, cms_client)
     # process.crawl(sp.SolanaNewsSpider, cms_client)
     # no content
     # process.crawl(sp.TheBlockSpider, cms_client)
     # no content
-    # process.crawl(sp.ZombitSpider, cms_client)
+    process.crawl(sp.ZombitSpider, cms_client)
 
     process.start()  # the script will block here until the crawling is finished
 
