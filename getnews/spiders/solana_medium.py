@@ -29,7 +29,7 @@ class SolanaMediumSpider(scrapy.Spider):
         for url in self.__get_article_link(response):
             if self.storage_helper.does_exist(url=url):
                 continue
-            yield SplashRequest(url, callback=self.__parse_article, endpoint='render.html', meta={
+            yield SplashRequest(url, callback=self._parse_article, endpoint='render.html', meta={
                 'url': url,
                 'splash': {
                     'images': 1,
@@ -49,20 +49,19 @@ class SolanaMediumSpider(scrapy.Spider):
             else:
                 return
 
-    @staticmethod
-    def __parse_article(response):
+    def _parse_article(self, response):
         article_meta_raw = response.xpath('//script[@type="application/ld+json"][1]/text()').get()
         article_meta = json.loads(article_meta_raw)
         article_date = TimeUtils.convert_datetime_to_iso8601(article_meta['datePublished'], "%Y-%m-%dT%H:%M:%S.%fZ")
         article_url = response.meta['url']
         title = response.xpath('//meta[@name="title"][1]/@content').get().split(' | ')[0]
-        content = SolanaMediumSpider.__get_article_paragraph(response)
+        content = SolanaMediumSpider._get_article_paragraph(response)
         content = markdownify(content, heading_style="ATX")
-        img_urls = SolanaMediumSpider.__get_all_img_urls(response)
+        img_urls = SolanaMediumSpider._get_all_img_urls(response)
 
         yield {
             'url': article_url,
-            'platform': SOLANA_FQDN,
+            'platform': self.name,
             'date': article_date,
             'title': title,
             'content': content,
@@ -71,7 +70,7 @@ class SolanaMediumSpider(scrapy.Spider):
         }
 
     @staticmethod
-    def __get_article_paragraph(response) -> str:
+    def _get_article_paragraph(response) -> str:
         paragraphs = response.xpath('//*[contains(@class, "pw-post-body-paragraph")]')
         paragraphs = [p.get() for p in paragraphs]
         return '<div>' + ''.join(paragraphs) + '</div>'
