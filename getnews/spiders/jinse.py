@@ -3,6 +3,8 @@ import json
 from markdownify import markdownify
 from getnews.storage import JinseStorageHelper
 
+from getnews.utils import TimeUtils
+
 class JinseSpider(scrapy.Spider):
     name = "jinse"
     allowed_domains = ["api.jinse.com"]
@@ -20,13 +22,12 @@ class JinseSpider(scrapy.Spider):
 
         for news in news_list:
             
-            date = news.get('date')
             lives = news.get('lives', [])
             
             for live in lives:
                 
                 article_id = live.get('id')
-                article_date = date
+                article_date = TimeUtils.convert_unixtime_to_iso8601(live.get('created_at'))
                 raw_content = live.get('content')
                 url = f'https://www.jinse.cn/lives/{article_id}.html'
 

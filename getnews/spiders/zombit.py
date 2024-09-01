@@ -5,6 +5,8 @@ from markdownify import markdownify
 from getnews.storage import ZombitStorageHelper
 
 
+
+
 class ZombitSpider(scrapy.Spider):
     name = "zombit"
     allowed_domains = ["zombit.info"]
