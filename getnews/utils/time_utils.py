@@ -13,5 +13,8 @@ class TimeUtils:
 
 
 if __name__ == '__main__':
-    iso_date = TimeUtils.convert_datetime_to_iso8601('2024-08-15 14:45 -04:00', "%Y-%m-%d %H:%M %z")
+    iso_date = TimeUtils.convert_datetime_to_iso8601('2024-08-30 11:18 -04:00', "%Y-%m-%d %H:%M %z")
+    iso_date_a = TimeUtils.convert_datetime_to_iso8601('2024-08-16 04:49 -04:00', "%Y-%m-%d %H:%M %z")
     print(iso_date)
+    print(iso_date_a)
+    print(datetime.fromisoformat(iso_date) >= datetime.fromisoformat(iso_date_a))

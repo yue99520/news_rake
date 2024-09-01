@@ -93,7 +93,7 @@ class StoragePipeline:
             # "spiderName": spider.name,
             "URL": item[origin_language]['url'],
             "date": item[origin_language]['date'],
-            "newsPic": item[origin_language]["images"] if len(item[origin_language]["images"]) > 0 else "",
+            "newsPic": item[origin_language]["images"][0] if len(item[origin_language]["images"]) > 0 else "",
             "language": "zh" if origin_language == "zh_tw" else "en",
             "newsTopicCN": item['zh_tw']['title'],
             "newsTopicEN": item['en']['title'],
@@ -109,11 +109,9 @@ class StoragePipeline:
             spider.logger.error(f"Failed to create article: url={url}, title=[zh_tw={storage_article['newsTopicCN']}, en={storage_article['newsTopicEN']}]")
             return None
         if created:
-            spider.logger.info(
-                f"Created article: url={url}, title=[zh_tw={article['newsTopicCN']}, en={article['newsTopicEN']}]")
+            print(f"[CREATED]: url={url}")
         else:
-            spider.logger.warning(
-                f"Skipped article: url={url}, title=[zh_tw={article['newsTopicCN']}, en={article['newsTopicEN']}]")
+            print(f"[SKIPPED]: url={url}")
         return None
 
 

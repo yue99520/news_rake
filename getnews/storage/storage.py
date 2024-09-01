@@ -53,7 +53,9 @@ class URLBasedIdentifierHelper(BaseStorageHelper):
                     "spiderName": spider_name,
                 }
             }
-            spider = {"spiderName": spider_name}
+            spider = {
+                "spiderName": spider_name,
+            }
 
             extra_info = kwargs.get('extra_info')
             if extra_info is not None:
@@ -69,7 +71,7 @@ class URLBasedIdentifierHelper(BaseStorageHelper):
     def does_exist(self, **kwargs) -> bool:
         if "url" not in kwargs:
             raise Exception("item must have a url")
-        return self.cms_client.get_crawler_or_none(kwargs['url'])
+        return self.cms_client.get_crawler_or_none(kwargs['url']) is not None
 
     def get_spider_context_or_none(self, spider_name: str) -> dict:
         if not spider_name:
