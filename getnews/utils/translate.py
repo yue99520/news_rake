@@ -38,3 +38,14 @@ class GeminiTranslate:
     async def to_normal_text(text: str) -> str:
         response = model.generate_content(f"幫我轉成正常的文字 去掉htmltag 但格式換行的br要留給我 但不要改動原本語言:/n/n {text}")
         return response.text
+
+    @staticmethod
+    async def compare_translation(zh: str, en: str):
+        resource = model.generate_content(f"請幫我比較中英文字上是否是對方的翻譯（格式沒關係，大致上即可，不需過於嚴格），，請輸出 'False'，否則輸出 'True':\n\nzh:{zh}\n\nen:{en}")
+        t = resource.text
+        if "True" in t or "true" in t:
+            return True
+        if "False" in t or "false" in t:
+            return False
+        print(f"Translation result not recognized: {t}")
+        return None

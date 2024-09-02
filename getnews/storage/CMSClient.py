@@ -49,6 +49,41 @@ class CMSClient:
             return False
         return True
 
+    def list_crawlers_by_page(self, take=10, offset=0):
+        list_crawlers_query = """
+            query ListCrawlers($take: Int!, $skip: Int!) {
+                crawlers: crawlers(
+                    take: $take,  # 每頁返回的條目數
+                    skip: $skip    # 跳過的條目數（即从第 skip+1 个条目开始返回）
+                ) {
+                    id
+                    CID
+                    URL
+                    date
+                    platformName
+                    newsTopicCN
+                    newsTopicEN
+                    contentCN
+                    contentEN
+                    newsPic
+                }
+            }
+        """
+        response_data = requests.post(
+            self.graphql_endpoint,
+            json={
+                "query": list_crawlers_query,
+                "variables": {
+                    "take": take,
+                    "skip": offset
+                }
+            }
+        ).json()
+        if "errors" not in response_data:
+            return response_data["data"]["crawlers"]
+        print(response_data['errors'][0]['message'])
+        return []
+
     def get_crawler_or_none(self, url):
         get_crawler_query = """
         query GetCrawler($url: String!) {

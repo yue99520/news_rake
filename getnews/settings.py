@@ -107,7 +107,8 @@ ITEM_PIPELINES = {
 
 
 # SPLASH
-SPLASH_URL = 'http://localhost:8050'
+SPLASH_URL = 'http://splash-agent.local:8050'
+# SPLASH_URL = 'http://splash-agent.henry:8050'
 
 ALLOWED_DOMAINS = ['foresightnews.pro', 'localhost', 'splash-agent.local', 'theblock.co']
 
