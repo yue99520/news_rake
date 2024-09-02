@@ -4,6 +4,7 @@ import re
 from markdownify import markdownify
 
 from getnews.storage import DecryptStorageHelper
+from getnews.utils import TimeUtils
 
 SOLANA_FQDN = "decrypt.co"
 
@@ -43,6 +44,7 @@ class DecryptSpider(scrapy.Spider):
     def parse_news(self, response):
         article_url = response.url
         article_date = response.meta['lastmod']
+        iso_article_date = TimeUtils.convert_datetime_to_iso8601(article_date, "%a, %d %b %Y %H:%M:%S %z")
         title = response.meta['title']
         paragraphs = response.xpath('//*[@id="__next"]/div/div[1]/div/main/div[2]/div/div/div[2]/div/div/div/div[1]/div/div').getall()
         content = self.__content_cleaning_and_rebuilding(paragraphs)
@@ -51,7 +53,7 @@ class DecryptSpider(scrapy.Spider):
         yield {
             'url': article_url,
             'platform': self.name,
-            'date': article_date,
+            'date': iso_article_date,
             'title': title,
             'content': content,
             'language': 'en',

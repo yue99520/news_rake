@@ -34,7 +34,7 @@ def run_spider():
     # no content
     # process.crawl(sp.TheBlockSpider, cms_client)
     # no content
-    process.crawl(sp.ZombitSpider, cms_client)
+    # process.crawl(sp.ZombitSpider, cms_client)
 
     process.start()  # the script will block here until the crawling is finished
 
